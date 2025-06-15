@@ -14,6 +14,7 @@ type Level struct {
 	cells            [][]Cell
 	TurnOrderPattern []interface{}
 	BurgerPatty      *entities.BurgerPatty
+	Winning          []Position
 }
 
 func (l *Level) Draw(screen *ebiten.Image) {
@@ -45,6 +46,13 @@ func (l *Level) Draw(screen *ebiten.Image) {
 	for i := 0; i <= l.gridRows(); i++ {
 		y := float32(i * config.TileSize)
 		vector.StrokeLine(screen, 0, y, float32(l.ScreenWidth()), y, strokeWidth, gridColor, false)
+	}
+
+	for _, v := range l.Winning {
+		winRectX := float64(v.X * config.TileSize)
+		winRectY := float64(v.Y * config.TileSize)
+		winTileMarkerColor := color.RGBA{R: 0xff, G: 0xff, B: 0x00, A: 0xcc}
+		ebitenutil.DrawRect(screen, winRectX, winRectY, float64(config.TileSize), float64(config.TileSize), winTileMarkerColor)
 	}
 }
 

@@ -28,6 +28,9 @@ func NewLevel0() *Level {
 			{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		},
 		BurgerPatty: entities.NewBurgerPatty(3, 3),
+		Winning: []Position{
+			{X: 6, Y: 6},
+		},
 	}
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),

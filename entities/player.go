@@ -39,10 +39,16 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 		return nil
 	}
 	img := ebiten.NewImageFromImage(playerDecoded)
+	// calculate offsets for centering
+	offsettedImg := ebiten.NewImage(32, 32)
+	offsetY := float64(32-18) / 2.0
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, offsetY)
+	offsettedImg.DrawImage(img, op)
 	return &Player{
 		GridX:      startX,
 		GridY:      startY,
-		Image:      img,
+		Image:      offsettedImg,
 		PlayerType: playerType,
 	}
 }

@@ -15,8 +15,9 @@ The plan:
 - [ ] Sokoban style of moving around and pushing stuff
 - [ ] Allow to push objects (? do I want this? push what, a pizza box?)
 - [ ] Goal: 
-  - [ ] Merge as one
-  - [ ] Bring it to the restaurant client (?)
+  - [x] Merge as one
+  - [x] Bring it to a winning position
+  - [ ] Properly draw some restaurant client
 - [ ] Different ingredients? Cheese, Lettuce, Bacon...
 - [ ] Enemies? Rats, Pidgeons
 - [ ] Pass to next level

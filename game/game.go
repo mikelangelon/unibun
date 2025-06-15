@@ -7,9 +7,11 @@ import (
 	"log/slog"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 	"github.com/mikelangelon/unibun/level"
+	"golang.org/x/image/font/basicfont"
 )
 
 type Game struct {
@@ -17,9 +19,7 @@ type Game struct {
 	turnManager turnManager
 
 	gameScreen *ebiten.Image
-
-	// TODO: Maybe replace by a method to check the player type?
-	isBurgerMerged bool
+	status     Status
 }
 
 type turnManager struct {
@@ -50,6 +50,7 @@ func NewGame() *Game {
 		turnManager: turnManager{
 			currentTurn: 0,
 		},
+		status: Playing,
 	}
 	g.buildTurnOrderDisplay()
 	return &g
@@ -64,13 +65,48 @@ func (g *Game) Update() error {
 			if !playedMoved {
 				break
 			}
-			if !g.isBurgerMerged {
+			if !g.alreadyMerged() {
 				g.attemptMergeBurger()
+			} else {
+				if actor.PlayerType == config.MergedBurgerType {
+					for _, v := range g.currentLevel().Winning {
+						if actor.GridX == v.X && actor.GridY == v.Y {
+							g.status = Win
+							log.Println("YOU WIN! Merged burger reached the win tile.")
+						}
+					}
+
+				}
 			}
-			g.advanceTurn()
+			if g.status == Playing {
+				g.advanceTurn()
+			}
 		}
 	}
 	return nil
+}
+
+func (g *Game) drawWinning(screen *ebiten.Image) {
+	winTextStr := "YOU WIN!"
+	textColor := color.White
+
+	fontFace := basicfont.Face7x13
+	textBounds := text.BoundString(fontFace, winTextStr)
+	textW := textBounds.Dx()
+	textH := textBounds.Dy()
+
+	tempTextImg := ebiten.NewImage(textW, textH)
+	text.Draw(tempTextImg, winTextStr, fontFace, -textBounds.Min.X, -textBounds.Min.Y, textColor)
+
+	scaleFactor := 4.0
+	opText := &ebiten.DrawImageOptions{}
+	opText.GeoM.Translate(-float64(textW)/2, -float64(textH)/2)
+	opText.GeoM.Scale(scaleFactor, scaleFactor)
+	opText.GeoM.Translate(config.WindowWidth/2, config.WindowHeight/2)
+
+	g.gameScreen.DrawImage(tempTextImg, opText)
+	messageText := "Nothing else is implemented after this :D"
+	ebitenutil.DebugPrintAt(g.gameScreen, messageText, config.WindowWidth/2-(len(messageText)*7/2), config.WindowHeight/2+int(float64(textH)*scaleFactor/2)+20)
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -91,6 +127,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 	if g.currentLevel().BurgerPatty != nil {
 		g.currentLevel().BurgerPatty.Draw(g.gameScreen)
+	}
+
+	// Draw winning message
+	if g.status == Win {
+		g.drawWinning(g.gameScreen)
 	}
 	// Finally draw screen
 	op := &ebiten.DrawImageOptions{}
@@ -187,13 +228,13 @@ func (g *Game) attemptMergeBurger() {
 	bottomBunPlayer := g.turnManager.getPlayerType(config.BottomBun)
 
 	// Draw in visual stack order: bottom, patty, top
-	mergedImage.DrawImage(topBunPlayer.Image, op)
+	mergedImage.DrawImage(bottomBunPlayer.Image, op)
 	op = &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, float64(0)/2.0)
 	mergedImage.DrawImage(g.currentLevel().BurgerPatty.Image, op)
 	op = &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, float64(-10)/2.0)
-	mergedImage.DrawImage(bottomBunPlayer.Image, op)
+	mergedImage.DrawImage(topBunPlayer.Image, op)
 
 	mergedPlayer := entities.Player{
 		GridX:      g.currentLevel().BurgerPatty.GridX,
@@ -211,15 +252,14 @@ func (g *Game) attemptMergeBurger() {
 	charactersWithoutMergedOnes = append(charactersWithoutMergedOnes, &mergedPlayer)
 	g.currentLevel().TurnOrderPattern = charactersWithoutMergedOnes
 	g.currentLevel().BurgerPatty = nil
-	g.isBurgerMerged = true
 }
 
 func (g *Game) canBeMerged() bool {
-	if g.isBurgerMerged || g.currentLevel().BurgerPatty == nil {
-		return false // Already merged, or components missing for a merge
+	if g.alreadyMerged() || g.currentLevel().BurgerPatty == nil {
+		// Already merged, or components missing for a merge
+		return false
 	}
 
-	// Assuming players[0] is TopBun and players[1] is BottomBun from NewGame/Reset
 	topBunPlayer := g.turnManager.getPlayerType(config.TopBun)
 	bottomBunPlayer := g.turnManager.getPlayerType(config.BottomBun)
 	patty := g.currentLevel().BurgerPatty
@@ -246,4 +286,8 @@ func (g *Game) canBeMerged() bool {
 		// For now... not allowed, it's weird to have the burguer the other way around
 	}
 	return merged
+}
+
+func (g *Game) alreadyMerged() bool {
+	return g.turnManager.getPlayerType(config.MergedBurgerType) != nil
 }
