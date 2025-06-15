@@ -15,7 +15,7 @@ import (
 type Player struct {
 	gridX, gridY int
 	playerType   config.PlayerType
-	image        *ebiten.Image
+	Image        *ebiten.Image
 }
 
 func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
@@ -39,7 +39,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 	return &Player{
 		gridX:      startX,
 		gridY:      startY,
-		image:      img,
+		Image:      img,
 		playerType: playerType,
 	}
 }
@@ -49,7 +49,7 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	pixelX := float64(p.gridX * config.TileSize)
 	pixelY := float64(p.gridY * config.TileSize)
 	op.GeoM.Translate(pixelX, pixelY)
-	screen.DrawImage(p.image, op)
+	screen.DrawImage(p.Image, op)
 }
 
 func (p *Player) Update(level *level.Level) {

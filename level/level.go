@@ -10,7 +10,8 @@ import (
 )
 
 type Level struct {
-	cells [][]Cell
+	cells            [][]Cell
+	TurnOrderPattern []interface{}
 }
 
 func (l *Level) Draw(screen *ebiten.Image) {
@@ -37,11 +38,11 @@ func (l *Level) Draw(screen *ebiten.Image) {
 	strokeWidth := float32(1)
 	for i := 0; i <= l.gridCols(); i++ {
 		x := float32(i * config.TileSize)
-		vector.StrokeLine(screen, x, 0, x, float32(l.screenHeight()), strokeWidth, gridColor, false)
+		vector.StrokeLine(screen, x, 0, x, float32(l.ScreenHeight()), strokeWidth, gridColor, false)
 	}
 	for i := 0; i <= l.gridRows(); i++ {
 		y := float32(i * config.TileSize)
-		vector.StrokeLine(screen, 0, y, float32(l.screenWidth()), y, strokeWidth, gridColor, false)
+		vector.StrokeLine(screen, 0, y, float32(l.ScreenWidth()), y, strokeWidth, gridColor, false)
 	}
 }
 
@@ -64,11 +65,11 @@ func (l *Level) gridRows() int {
 	return len(l.cells)
 }
 
-func (l *Level) screenHeight() int {
+func (l *Level) ScreenHeight() int {
 	return l.gridRows() * config.TileSize
 }
 
-func (l *Level) screenWidth() int {
+func (l *Level) ScreenWidth() int {
 	return l.gridCols() * config.TileSize
 }
 
