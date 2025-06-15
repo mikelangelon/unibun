@@ -5,13 +5,17 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/config"
+	"github.com/mikelangelon/unibun/level"
 )
 
 type Game struct {
+	levels []*level.Level
 }
 
 func NewGame() *Game {
-	return &Game{}
+	return &Game{
+		levels: []*level.Level{level.NewLevel0()},
+	}
 }
 
 func (g *Game) Update() error {
@@ -19,10 +23,10 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.Fill(color.Black) // You can choose any color for the padding.
+	screen.Fill(color.Black)
+	g.levels[0].Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	// The logical screen size is now the full window size.
 	return config.WindowWidth, config.WindowHeight
 }
