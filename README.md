@@ -8,11 +8,20 @@ The thema is UNITE
 
 Main idea is the player controls 2 buns and have to get united to the patty burger.
 
-Brainstorming:
-- Grid map
-- Turn base, sokoban style of moving around and pushing stuff
-- Different ingredientes? Cheese, Lettuce, Bacon...
-- Enemies? Rats, Pidgeons
-- Goal: 
-  - Merge as one
-  - Bring it to the restaurant client (?)
+The plan:
+- [x] Grid map
+- [x] Move around something
+- [ ] Turn base, sokoban style of moving around and pushing stuff
+- [ ] Allow to push objects (? do I want this? push what, a pizza box?)
+- [ ] Goal: 
+  - [ ] Merge as one
+  - [ ] Bring it to the restaurant client (?)
+- [ ] Different ingredients? Cheese, Lettuce, Bacon...
+- [ ] Enemies? Rats, Pidgeons
+- [ ] Pass to next level
+
+## Packages
+- Game --> Main game with all the logic
+- Entities --> Players, enemies... (*Maybe this should just be in Game package?)
+- Level --> About the grid, it should not have dependencies with the game at all
+- Config --> Params to change the game
