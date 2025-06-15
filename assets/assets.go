@@ -12,7 +12,7 @@ var (
 	BottomBun []byte
 
 	//go:embed patty.png
-	BurguerPatty []byte
+	BurgerPatty []byte
 
 	//go:embed cheese.png
 	Cheese []byte

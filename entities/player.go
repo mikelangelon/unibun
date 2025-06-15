@@ -12,7 +12,7 @@ import (
 )
 
 type Player struct {
-	gridX, gridY int
+	GridX, GridY int
 	PlayerType   config.PlayerType
 	Image        *ebiten.Image
 }
@@ -31,7 +31,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 	case config.Cheese:
 		b = assets.Cheese
 	case config.BurguerPatty:
-		b = assets.BurguerPatty
+		b = assets.BurgerPatty
 	}
 	playerDecoded, _, err := image.Decode(bytes.NewReader(b))
 	if err != nil {
@@ -40,8 +40,8 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 	}
 	img := ebiten.NewImageFromImage(playerDecoded)
 	return &Player{
-		gridX:      startX,
-		gridY:      startY,
+		GridX:      startX,
+		GridY:      startY,
 		Image:      img,
 		PlayerType: playerType,
 	}
@@ -49,14 +49,14 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 
 func (p *Player) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	pixelX := float64(p.gridX * config.TileSize)
-	pixelY := float64(p.gridY * config.TileSize)
+	pixelX := float64(p.GridX * config.TileSize)
+	pixelY := float64(p.GridY * config.TileSize)
 	op.GeoM.Translate(pixelX, pixelY)
 	screen.DrawImage(p.Image, op)
 }
 
 func (p *Player) Update(level Level) bool {
-	targetX, targetY := p.gridX, p.gridY
+	targetX, targetY := p.GridX, p.GridY
 	playerAttemptedMove := false
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) || inpututil.IsKeyJustPressed(ebiten.KeyA) {
@@ -76,8 +76,8 @@ func (p *Player) Update(level Level) bool {
 		return false
 	}
 	if level.IsWalkable(targetX, targetY) {
-		p.gridX = targetX
-		p.gridY = targetY
+		p.GridX = targetX
+		p.GridY = targetY
 	}
 	return true
 }

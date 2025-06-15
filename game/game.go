@@ -4,6 +4,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 	"log"
+	"log/slog"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/config"
@@ -16,6 +17,9 @@ type Game struct {
 	turnManager turnManager
 
 	gameScreen *ebiten.Image
+
+	// TODO: Maybe replace by a method to check the player type?
+	isBurgerMerged bool
 }
 
 type turnManager struct {
@@ -26,6 +30,18 @@ type turnManager struct {
 type character interface {
 	Draw(screen *ebiten.Image)
 	Update(level entities.Level) bool
+}
+
+func (t turnManager) getPlayerType(playerType config.PlayerType) *entities.Player {
+	for _, v := range t.turnOrderDisplay {
+		switch item := v.(type) {
+		case *entities.Player:
+			if item.PlayerType == playerType {
+				return item
+			}
+		}
+	}
+	return nil
 }
 
 func NewGame() *Game {
@@ -48,6 +64,9 @@ func (g *Game) Update() error {
 			if !playedMoved {
 				break
 			}
+			if !g.isBurgerMerged {
+				g.attemptMergeBurger()
+			}
 			g.advanceTurn()
 		}
 	}
@@ -64,11 +83,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.gameScreen.Clear() // Clear the offscreen buffer
 
 	g.gameScreen.Fill(color.RGBA{R: 0x10, G: 0x10, B: 0x10, A: 0xff})
-	g.levels[0].Draw(g.gameScreen)
+	g.currentLevel().Draw(g.gameScreen)
 	for _, player := range g.turnManager.turnOrderDisplay {
 		if player != nil {
 			player.Draw(g.gameScreen)
 		}
+	}
+	if g.currentLevel().BurgerPatty != nil {
+		g.currentLevel().BurgerPatty.Draw(g.gameScreen)
 	}
 	// Finally draw screen
 	op := &ebiten.DrawImageOptions{}
@@ -150,4 +172,78 @@ func (g *Game) advanceTurn() {
 
 	g.turnManager.currentTurn = (g.turnManager.currentTurn + 1) % len(currentLvl.TurnOrderPattern)
 	g.buildTurnOrderDisplay()
+}
+
+func (g *Game) attemptMergeBurger() {
+	if !g.canBeMerged() {
+		return
+	}
+	slog.Info("Burger components united!")
+	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
+
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(10)/2.0)
+	topBunPlayer := g.turnManager.getPlayerType(config.TopBun)
+	bottomBunPlayer := g.turnManager.getPlayerType(config.BottomBun)
+
+	// Draw in visual stack order: bottom, patty, top
+	mergedImage.DrawImage(topBunPlayer.Image, op)
+	op = &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(0)/2.0)
+	mergedImage.DrawImage(g.currentLevel().BurgerPatty.Image, op)
+	op = &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(-10)/2.0)
+	mergedImage.DrawImage(bottomBunPlayer.Image, op)
+
+	mergedPlayer := entities.Player{
+		GridX:      g.currentLevel().BurgerPatty.GridX,
+		GridY:      g.currentLevel().BurgerPatty.GridY,
+		PlayerType: config.MergedBurgerType,
+		Image:      mergedImage,
+	}
+	var charactersWithoutMergedOnes []interface{}
+	for _, v := range g.turnManager.turnOrderDisplay {
+		if v == topBunPlayer || v == bottomBunPlayer {
+			continue
+		}
+		charactersWithoutMergedOnes = append(charactersWithoutMergedOnes, v)
+	}
+	charactersWithoutMergedOnes = append(charactersWithoutMergedOnes, &mergedPlayer)
+	g.currentLevel().TurnOrderPattern = charactersWithoutMergedOnes
+	g.currentLevel().BurgerPatty = nil
+	g.isBurgerMerged = true
+}
+
+func (g *Game) canBeMerged() bool {
+	if g.isBurgerMerged || g.currentLevel().BurgerPatty == nil {
+		return false // Already merged, or components missing for a merge
+	}
+
+	// Assuming players[0] is TopBun and players[1] is BottomBun from NewGame/Reset
+	topBunPlayer := g.turnManager.getPlayerType(config.TopBun)
+	bottomBunPlayer := g.turnManager.getPlayerType(config.BottomBun)
+	patty := g.currentLevel().BurgerPatty
+
+	merged := false
+	// Corrected: TopBun-Patty-BottomBun or BottomBun-Patty-TopBun
+	if topBunPlayer.GridY == patty.GridY && patty.GridY == bottomBunPlayer.GridY { // Same row
+		// Case 1: TopBun, Patty, BottomBun
+		if topBunPlayer.GridX == patty.GridX-1 && bottomBunPlayer.GridX == patty.GridX+1 {
+			merged = true
+		}
+		// Case 2: BottomBun, Patty, TopBun
+		if bottomBunPlayer.GridX == patty.GridX-1 && topBunPlayer.GridX == patty.GridX+1 {
+			merged = true
+		}
+	}
+	// Check vertical alignment: TopBun-Patty-BottomBun or BottomBun-Patty-TopBun
+	if topBunPlayer.GridX == patty.GridX && patty.GridX == bottomBunPlayer.GridX { // Same column
+		// Case 1: TopBun above, Patty, BottomBun below
+		if topBunPlayer.GridY == patty.GridY-1 && bottomBunPlayer.GridY == patty.GridY+1 {
+			merged = true
+		}
+		// Case 2: BottomBun above, Patty, TopBun below
+		// For now... not allowed, it's weird to have the burguer the other way around
+	}
+	return merged
 }

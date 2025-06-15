@@ -1,6 +1,7 @@
 package level
 
 import (
+	"github.com/mikelangelon/unibun/entities"
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -12,6 +13,7 @@ import (
 type Level struct {
 	cells            [][]Cell
 	TurnOrderPattern []interface{}
+	BurgerPatty      *entities.BurgerPatty
 }
 
 func (l *Level) Draw(screen *ebiten.Image) {
