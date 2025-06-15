@@ -3,7 +3,6 @@ package entities
 import (
 	"bytes"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mikelangelon/unibun/level"
 	"image"
 	"log/slog"
 
@@ -16,6 +15,10 @@ type Player struct {
 	gridX, gridY int
 	PlayerType   config.PlayerType
 	Image        *ebiten.Image
+}
+
+type Level interface {
+	IsWalkable(gridX, gridY int) bool
 }
 
 func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
@@ -52,7 +55,7 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	screen.DrawImage(p.Image, op)
 }
 
-func (p *Player) Update(level *level.Level) bool {
+func (p *Player) Update(level Level) bool {
 	targetX, targetY := p.gridX, p.gridY
 	playerAttemptedMove := false
 

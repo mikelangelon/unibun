@@ -13,7 +13,6 @@ import (
 
 type Game struct {
 	levels      []*level.Level
-	players     []*entities.Player
 	turnManager turnManager
 
 	gameScreen *ebiten.Image
@@ -21,18 +20,17 @@ type Game struct {
 
 type turnManager struct {
 	currentTurn      int
-	turnOrderDisplay []interface{}
+	turnOrderDisplay []character
+}
+
+type character interface {
+	Draw(screen *ebiten.Image)
+	Update(level entities.Level) bool
 }
 
 func NewGame() *Game {
 	g := Game{
 		levels: []*level.Level{level.NewLevel0()},
-		players: []*entities.Player{
-			entities.NewPlayer(1, 1, config.TopBun),
-			entities.NewPlayer(2, 2, config.BottomBun),
-			entities.NewPlayer(3, 3, config.BurguerPatty),
-			entities.NewPlayer(4, 4, config.Cheese),
-		},
 		turnManager: turnManager{
 			currentTurn: 0,
 		},
@@ -44,16 +42,9 @@ func NewGame() *Game {
 func (g *Game) Update() error {
 	actorEntry := g.currentLevel().TurnOrderPattern[g.turnManager.currentTurn]
 	switch actor := actorEntry.(type) {
-	case config.PlayerType:
-		var playerToUpdate *entities.Player
-		for _, v := range g.players {
-			if v.PlayerType != actor {
-				continue
-			}
-			playerToUpdate = v
-		}
-		if playerToUpdate != nil {
-			playedMoved := playerToUpdate.Update(g.currentLevel())
+	case *entities.Player:
+		if actor != nil {
+			playedMoved := actor.Update(g.currentLevel())
 			if !playedMoved {
 				break
 			}
@@ -74,7 +65,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.gameScreen.Fill(color.RGBA{R: 0x10, G: 0x10, B: 0x10, A: 0xff})
 	g.levels[0].Draw(g.gameScreen)
-	for _, player := range g.players {
+	for _, player := range g.turnManager.turnOrderDisplay {
 		if player != nil {
 			player.Draw(g.gameScreen)
 		}
@@ -97,7 +88,7 @@ const (
 )
 
 func (g *Game) drawTurnOrder(screen *ebiten.Image) {
-	uiAreaStartY := float64(g.currentLevel().ScreenHeight())
+	uiAreaStartY := float64(g.currentLevel().ScreenHeight()) + config.PaddingTop
 
 	orderText := "Order:"
 	textRenderX := float64(config.PaddingLeft + turnOrderTextMarginX)
@@ -132,7 +123,7 @@ func (g *Game) currentLevel() *level.Level {
 }
 
 func (g *Game) buildTurnOrderDisplay() {
-	g.turnManager.turnOrderDisplay = []interface{}{}
+	g.turnManager.turnOrderDisplay = []character{}
 	pattern := g.currentLevel().TurnOrderPattern
 	if len(pattern) == 0 {
 		return
@@ -143,15 +134,8 @@ func (g *Game) buildTurnOrderDisplay() {
 		actor := pattern[idx]
 
 		switch actualActor := actor.(type) {
-		case config.PlayerType:
-			switch actualActor {
-			case config.TopBun:
-				g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, g.players[0])
-			case config.BottomBun:
-				g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, g.players[1])
-			case config.Cheese:
-				g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, g.players[2])
-			}
+		case *entities.Player:
+			g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, actualActor)
 		}
 	}
 }

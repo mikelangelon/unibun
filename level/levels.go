@@ -1,6 +1,9 @@
 package level
 
-import "github.com/mikelangelon/unibun/config"
+import (
+	"github.com/mikelangelon/unibun/config"
+	"github.com/mikelangelon/unibun/entities"
+)
 
 func NewLevel0() *Level {
 	w := Cell{Type: CellTypeWall}
@@ -26,9 +29,9 @@ func NewLevel0() *Level {
 		},
 	}
 	lvl.TurnOrderPattern = []interface{}{
-		config.TopBun,
-		config.BottomBun,
-		config.Cheese,
+		entities.NewPlayer(1, 1, config.TopBun),
+		entities.NewPlayer(2, 2, config.BottomBun),
+		entities.NewPlayer(4, 4, config.Cheese),
 	}
 	return lvl
 }

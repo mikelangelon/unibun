@@ -11,7 +11,8 @@ Main idea is the player controls 2 buns and have to get united to the patty burg
 The plan:
 - [x] Grid map
 - [x] Move around something
-- [ ] Turn base, sokoban style of moving around and pushing stuff
+- [x] Turn base
+- [ ] Sokoban style of moving around and pushing stuff
 - [ ] Allow to push objects (? do I want this? push what, a pizza box?)
 - [ ] Goal: 
   - [ ] Merge as one
