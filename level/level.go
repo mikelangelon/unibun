@@ -99,4 +99,5 @@ func (l *Level) IsWalkable(gridX, gridY int) bool {
 	default:
 		return false
 	}
+
 }

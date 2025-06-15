@@ -7,11 +7,9 @@ import (
 	"log/slog"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 	"github.com/mikelangelon/unibun/level"
-	"golang.org/x/image/font/basicfont"
 )
 
 type Game struct {
@@ -61,9 +59,27 @@ func (g *Game) Update() error {
 	switch actor := actorEntry.(type) {
 	case *entities.Player:
 		if actor != nil {
+			oldX, oldY := actor.GridX, actor.GridY
 			playedMoved := actor.Update(g.currentLevel())
 			if !playedMoved {
 				break
+			}
+			isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
+			patty := g.currentLevel().BurgerPatty
+			if isBun && patty != nil && actor.GridX == patty.GridX && actor.GridY == patty.GridY {
+				// A bun is trying to move into the patty's space. Try to push it.
+				pattyNextX := patty.GridX + (actor.GridX - oldX)
+				pattyNextY := patty.GridY + (actor.GridY - oldY)
+				canPattyMove := g.currentLevel().IsWalkable(pattyNextX, pattyNextY)
+				if !canPattyMove {
+					playedMoved = false
+					actor.GridX, actor.GridY = oldX, oldY
+					break
+				} else {
+					// TODO Check if patty's next spot is occupied by other players, enemies...
+					patty.GridX = pattyNextX
+					patty.GridY = pattyNextY
+				}
 			}
 			if !g.alreadyMerged() {
 				g.attemptMergeBurger()
@@ -86,37 +102,12 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func (g *Game) drawWinning(screen *ebiten.Image) {
-	winTextStr := "YOU WIN!"
-	textColor := color.White
-
-	fontFace := basicfont.Face7x13
-	textBounds := text.BoundString(fontFace, winTextStr)
-	textW := textBounds.Dx()
-	textH := textBounds.Dy()
-
-	tempTextImg := ebiten.NewImage(textW, textH)
-	text.Draw(tempTextImg, winTextStr, fontFace, -textBounds.Min.X, -textBounds.Min.Y, textColor)
-
-	scaleFactor := 4.0
-	opText := &ebiten.DrawImageOptions{}
-	opText.GeoM.Translate(-float64(textW)/2, -float64(textH)/2)
-	opText.GeoM.Scale(scaleFactor, scaleFactor)
-	opText.GeoM.Translate(config.WindowWidth/2, config.WindowHeight/2)
-
-	g.gameScreen.DrawImage(tempTextImg, opText)
-	messageText := "Nothing else is implemented after this :D"
-	ebitenutil.DebugPrintAt(g.gameScreen, messageText, config.WindowWidth/2-(len(messageText)*7/2), config.WindowHeight/2+int(float64(textH)*scaleFactor/2)+20)
-}
-
 func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.Black)
-	// Ensure offscreen buffer is initialized
-	// g.offscreen will hold the actual game content (screenWidth x screenHeight)
 	if g.gameScreen == nil {
 		g.gameScreen = ebiten.NewImage(g.levels[0].ScreenWidth(), g.levels[0].ScreenHeight())
 	}
-	g.gameScreen.Clear() // Clear the offscreen buffer
+	g.gameScreen.Clear()
 
 	g.gameScreen.Fill(color.RGBA{R: 0x10, G: 0x10, B: 0x10, A: 0xff})
 	g.currentLevel().Draw(g.gameScreen)
@@ -131,7 +122,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	// Draw winning message
 	if g.status == Win {
-		g.drawWinning(g.gameScreen)
+		drawWinning(g.gameScreen)
 	}
 	// Finally draw screen
 	op := &ebiten.DrawImageOptions{}
@@ -156,10 +147,9 @@ func (g *Game) drawTurnOrder(screen *ebiten.Image) {
 	orderText := "Order:"
 	textRenderX := float64(config.PaddingLeft + turnOrderTextMarginX)
 
-	// Align text top with icon top + small offset for visual balance
 	textRenderY := uiAreaStartY + float64(turnOrderIconTopMargin+turnOrderTextOffsetY)
 	ebitenutil.DebugPrintAt(screen, orderText, int(textRenderX), int(textRenderY))
-	// Estimate width of "Order: " text to position icons.
+
 	// TODO: check other ways? Maybe use ebiten/text and text.BoundString
 	iconStartX := textRenderX + float64(len(orderText)*7) + float64(turnOrderIconSpacing) // Approx 7px per char for default font
 	for i, entity := range g.turnManager.turnOrderDisplay {
