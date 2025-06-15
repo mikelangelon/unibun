@@ -14,7 +14,7 @@ import (
 
 type Player struct {
 	gridX, gridY int
-	playerType   config.PlayerType
+	PlayerType   config.PlayerType
 	Image        *ebiten.Image
 }
 
@@ -40,7 +40,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 		gridX:      startX,
 		gridY:      startY,
 		Image:      img,
-		playerType: playerType,
+		PlayerType: playerType,
 	}
 }
 
@@ -52,7 +52,7 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	screen.DrawImage(p.Image, op)
 }
 
-func (p *Player) Update(level *level.Level) {
+func (p *Player) Update(level *level.Level) bool {
 	targetX, targetY := p.gridX, p.gridY
 	playerAttemptedMove := false
 
@@ -70,11 +70,11 @@ func (p *Player) Update(level *level.Level) {
 		playerAttemptedMove = true
 	}
 	if !playerAttemptedMove {
-		return
+		return false
 	}
 	if level.IsWalkable(targetX, targetY) {
 		p.gridX = targetX
 		p.gridY = targetY
 	}
-	return
+	return true
 }

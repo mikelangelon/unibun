@@ -3,6 +3,7 @@ package game
 import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/config"
@@ -41,7 +42,24 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
-	g.players[0].Update(g.levels[0])
+	actorEntry := g.currentLevel().TurnOrderPattern[g.turnManager.currentTurn]
+	switch actor := actorEntry.(type) {
+	case config.PlayerType:
+		var playerToUpdate *entities.Player
+		for _, v := range g.players {
+			if v.PlayerType != actor {
+				continue
+			}
+			playerToUpdate = v
+		}
+		if playerToUpdate != nil {
+			playedMoved := playerToUpdate.Update(g.currentLevel())
+			if !playedMoved {
+				break
+			}
+			g.advanceTurn()
+		}
+	}
 	return nil
 }
 
@@ -79,7 +97,7 @@ const (
 )
 
 func (g *Game) drawTurnOrder(screen *ebiten.Image) {
-	uiAreaStartY := float64(g.currentLevel().ScreenHeight() + config.PaddingTop)
+	uiAreaStartY := float64(g.currentLevel().ScreenHeight())
 
 	orderText := "Order:"
 	textRenderX := float64(config.PaddingLeft + turnOrderTextMarginX)
@@ -136,4 +154,16 @@ func (g *Game) buildTurnOrderDisplay() {
 			}
 		}
 	}
+}
+
+// advanceTurn moves to the next actor in the turn pattern.
+func (g *Game) advanceTurn() {
+	currentLvl := g.currentLevel()
+	if len(currentLvl.TurnOrderPattern) == 0 {
+		log.Println("Warning: Current level has no turn order pattern defined.")
+		return
+	}
+
+	g.turnManager.currentTurn = (g.turnManager.currentTurn + 1) % len(currentLvl.TurnOrderPattern)
+	g.buildTurnOrderDisplay()
 }
