@@ -18,6 +18,9 @@ type Game struct {
 
 	gameScreen *ebiten.Image
 	status     Status
+
+	// TODO Maybe is not needed? Use status instead?
+	needsRestart bool
 }
 
 type turnManager struct {
@@ -62,6 +65,14 @@ func (g *Game) Update() error {
 		if !enemyMoved {
 			break
 		}
+		for _, v := range g.currentLevel().TurnOrderPattern {
+			switch player := v.(type) {
+			case *entities.Player:
+				if actor.Collision(player) {
+					g.needsRestart = true
+				}
+			}
+		}
 		g.advanceTurn()
 	case *entities.Player:
 		if actor != nil {
@@ -104,6 +115,10 @@ func (g *Game) Update() error {
 				g.advanceTurn()
 			}
 		}
+	}
+	if g.needsRestart {
+		g.Reset()
+		return nil
 	}
 	return nil
 }
@@ -293,4 +308,9 @@ func (g *Game) canBeMerged() bool {
 
 func (g *Game) alreadyMerged() bool {
 	return g.turnManager.getPlayerType(config.MergedBurgerType) != nil
+}
+
+func (g *Game) Reset() {
+	log.Println("Game Over! Restarting...")
+	g.needsRestart = false
 }
