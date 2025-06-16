@@ -16,4 +16,7 @@ var (
 
 	//go:embed cheese.png
 	Cheese []byte
+
+	//go:embed pidgeon.png
+	Pidgeon []byte
 )

@@ -13,7 +13,8 @@ The plan:
 - [x] Move around something
 - [x] Turn base
 - [ ] Sokoban style of moving around and pushing stuff
-- [ ] Allow to push objects (? do I want this? push what, a pizza box?)
+- [x] Allow to push patty
+  - [ ] Allow to push other objects
 - [ ] Goal: 
   - [x] Merge as one
   - [x] Bring it to a winning position

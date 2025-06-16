@@ -57,6 +57,12 @@ func NewGame() *Game {
 func (g *Game) Update() error {
 	actorEntry := g.currentLevel().TurnOrderPattern[g.turnManager.currentTurn]
 	switch actor := actorEntry.(type) {
+	case *entities.Enemy:
+		enemyMoved := actor.Update(g.currentLevel())
+		if !enemyMoved {
+			break
+		}
+		g.advanceTurn()
 	case *entities.Player:
 		if actor != nil {
 			oldX, oldY := actor.GridX, actor.GridY
@@ -111,9 +117,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	g.gameScreen.Fill(color.RGBA{R: 0x10, G: 0x10, B: 0x10, A: 0xff})
 	g.currentLevel().Draw(g.gameScreen)
-	for _, player := range g.turnManager.turnOrderDisplay {
-		if player != nil {
-			player.Draw(g.gameScreen)
+	for _, character := range g.turnManager.turnOrderDisplay {
+		if character != nil {
+			character.Draw(g.gameScreen)
 		}
 	}
 	if g.currentLevel().BurgerPatty != nil {
@@ -158,15 +164,20 @@ func (g *Game) drawTurnOrder(screen *ebiten.Image) {
 
 		switch item := entity.(type) {
 		case *entities.Player:
-			op := &ebiten.DrawImageOptions{}
-			pixelX := float64(iconX)
-			pixelY := float64(iconY)
-			op.GeoM.Translate(pixelX, pixelY)
-			screen.DrawImage(item.Image, op)
+			drawIcon(screen, item.Image, iconX, iconY)
+		case *entities.Enemy:
+			drawIcon(screen, item.Image, iconX, iconY)
 		}
 	}
 }
 
+func drawIcon(screen *ebiten.Image, icon *ebiten.Image, iconX, iconY float64) {
+	op := &ebiten.DrawImageOptions{}
+	pixelX := float64(iconX)
+	pixelY := float64(iconY)
+	op.GeoM.Translate(pixelX, pixelY)
+	screen.DrawImage(icon, op)
+}
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return config.WindowWidth, config.WindowHeight
 }
@@ -187,6 +198,8 @@ func (g *Game) buildTurnOrderDisplay() {
 		actor := pattern[idx]
 
 		switch actualActor := actor.(type) {
+		case *entities.Enemy:
+			g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, actualActor)
 		case *entities.Player:
 			g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, actualActor)
 		}
