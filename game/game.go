@@ -53,19 +53,28 @@ func NewGame() *Game {
 		},
 		status: Playing,
 	}
-	g.buildTurnOrderDisplay()
+	var characters []character
+	for _, v := range g.currentLevel().TurnOrderPattern {
+		switch actualActor := v.(type) {
+		case *entities.Enemy:
+			characters = append(characters, actualActor)
+		case entities.Player:
+			characters = append(characters, &actualActor)
+		}
+	}
+	g.turnManager.turnOrderDisplay = characters
 	return &g
 }
 
 func (g *Game) Update() error {
-	actorEntry := g.currentLevel().TurnOrderPattern[g.turnManager.currentTurn]
+	actorEntry := g.turnManager.turnOrderDisplay[0]
 	switch actor := actorEntry.(type) {
 	case *entities.Enemy:
 		enemyMoved := actor.Update(g.currentLevel())
 		if !enemyMoved {
 			break
 		}
-		for _, v := range g.currentLevel().TurnOrderPattern {
+		for _, v := range g.turnManager.turnOrderDisplay {
 			switch player := v.(type) {
 			case *entities.Player:
 				if actor.Collision(player) {
@@ -202,23 +211,8 @@ func (g *Game) currentLevel() *level.Level {
 }
 
 func (g *Game) buildTurnOrderDisplay() {
-	g.turnManager.turnOrderDisplay = []character{}
-	pattern := g.currentLevel().TurnOrderPattern
-	if len(pattern) == 0 {
-		return
-	}
-
-	for i := 0; i < len(pattern); i++ {
-		idx := (g.turnManager.currentTurn + i) % len(pattern)
-		actor := pattern[idx]
-
-		switch actualActor := actor.(type) {
-		case *entities.Enemy:
-			g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, actualActor)
-		case *entities.Player:
-			g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay, actualActor)
-		}
-	}
+	firstElement := g.turnManager.turnOrderDisplay[0]
+	g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay[1:], firstElement)
 }
 
 // advanceTurn moves to the next actor in the turn pattern.

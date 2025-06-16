@@ -21,7 +21,7 @@ type Level interface {
 	IsWalkable(gridX, gridY int) bool
 }
 
-func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
+func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 	var b = []byte{}
 	switch playerType {
 	case config.TopBun:
@@ -36,7 +36,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 	playerDecoded, _, err := image.Decode(bytes.NewReader(b))
 	if err != nil {
 		slog.Error("unexpected error decoding player image", "error", err)
-		return nil
+		return Player{}
 	}
 	img := ebiten.NewImageFromImage(playerDecoded)
 	// calculate offsets for centering
@@ -45,7 +45,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) *Player {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, offsetY)
 	offsettedImg.DrawImage(img, op)
-	return &Player{
+	return Player{
 		GridX:      startX,
 		GridY:      startY,
 		Image:      offsettedImg,

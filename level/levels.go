@@ -35,7 +35,6 @@ func NewLevel0() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(3, 5, config.BottomBun),
-		entities.NewPlayer(4, 4, config.Cheese),
 		entities.NewEnemy(10, 10),
 	}
 	return lvl
