@@ -20,8 +20,9 @@ type Game struct {
 	status     Status
 
 	// TODO Maybe is not needed? Use status instead?
-	needsRestart bool
-	shake        *Shake
+	needsRestart        bool
+	shake               *Shake
+	enemyTurnDelayTimer int
 }
 
 type turnManager struct {
@@ -74,6 +75,10 @@ func (g *Game) Update() error {
 	actorEntry := g.turnManager.turnOrderDisplay[0]
 	switch actor := actorEntry.(type) {
 	case *entities.Enemy:
+		if g.enemyTurnDelayTimer > 0 {
+			g.enemyTurnDelayTimer--
+			return nil
+		}
 		g.checkCollisionToPlayer(actor)
 		enemyMoved := actor.Update(g.currentLevel())
 		if !enemyMoved {
@@ -214,6 +219,10 @@ func (g *Game) currentLevel() *level.Level {
 func (g *Game) buildTurnOrderDisplay() {
 	firstElement := g.turnManager.turnOrderDisplay[0]
 	g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay[1:], firstElement)
+	switch g.turnManager.turnOrderDisplay[0].(type) {
+	case *entities.Enemy:
+		g.enemyTurnDelayTimer = config.EnemyTurnDelayDuration
+	}
 }
 
 // advanceTurn moves to the next actor in the turn pattern.
