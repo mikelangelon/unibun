@@ -21,6 +21,7 @@ type Game struct {
 
 	// TODO Maybe is not needed? Use status instead?
 	needsRestart bool
+	shake        *Shake
 }
 
 type turnManager struct {
@@ -67,21 +68,18 @@ func NewGame() *Game {
 }
 
 func (g *Game) Update() error {
+	if g.shake != nil {
+		g.shake.Update()
+	}
 	actorEntry := g.turnManager.turnOrderDisplay[0]
 	switch actor := actorEntry.(type) {
 	case *entities.Enemy:
+		g.checkCollisionToPlayer(actor)
 		enemyMoved := actor.Update(g.currentLevel())
 		if !enemyMoved {
 			break
 		}
-		for _, v := range g.turnManager.turnOrderDisplay {
-			switch player := v.(type) {
-			case *entities.Player:
-				if actor.Collision(player) {
-					g.needsRestart = true
-				}
-			}
-		}
+		g.checkCollisionToPlayer(actor)
 		g.advanceTurn()
 	case *entities.Player:
 		if actor != nil {
@@ -157,6 +155,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Finally draw screen
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(config.PaddingLeft), float64(config.PaddingTop))
+	if g.shake != nil {
+		g.shake.shake(op)
+	}
 	screen.DrawImage(g.gameScreen, op)
 
 	g.drawTurnOrder(screen)
@@ -307,6 +308,7 @@ func (g *Game) alreadyMerged() bool {
 func (g *Game) Reset() {
 	log.Println("Game Over! Restarting...")
 	g.needsRestart = false
+	g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {
 		switch actualActor := v.(type) {
@@ -317,4 +319,15 @@ func (g *Game) Reset() {
 		}
 	}
 	g.turnManager.turnOrderDisplay = characters
+}
+
+func (g *Game) checkCollisionToPlayer(enemy *entities.Enemy) {
+	for _, v := range g.turnManager.turnOrderDisplay {
+		switch player := v.(type) {
+		case *entities.Player:
+			if enemy.Collision(player) {
+				g.needsRestart = true
+			}
+		}
+	}
 }
