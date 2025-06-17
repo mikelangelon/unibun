@@ -255,7 +255,7 @@ func (g *Game) attemptMergeBurger() {
 		PlayerType: config.MergedBurgerType,
 		Image:      mergedImage,
 	}
-	var charactersWithoutMergedOnes []interface{}
+	var charactersWithoutMergedOnes []character
 	for _, v := range g.turnManager.turnOrderDisplay {
 		if v == topBunPlayer || v == bottomBunPlayer {
 			continue
@@ -263,7 +263,7 @@ func (g *Game) attemptMergeBurger() {
 		charactersWithoutMergedOnes = append(charactersWithoutMergedOnes, v)
 	}
 	charactersWithoutMergedOnes = append(charactersWithoutMergedOnes, &mergedPlayer)
-	g.currentLevel().TurnOrderPattern = charactersWithoutMergedOnes
+	g.turnManager.turnOrderDisplay = charactersWithoutMergedOnes
 	g.currentLevel().BurgerPatty = nil
 }
 
