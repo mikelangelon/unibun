@@ -307,4 +307,14 @@ func (g *Game) alreadyMerged() bool {
 func (g *Game) Reset() {
 	log.Println("Game Over! Restarting...")
 	g.needsRestart = false
+	var characters []character
+	for _, v := range g.currentLevel().TurnOrderPattern {
+		switch actualActor := v.(type) {
+		case *entities.Enemy:
+			characters = append(characters, actualActor)
+		case entities.Player:
+			characters = append(characters, &actualActor)
+		}
+	}
+	g.turnManager.turnOrderDisplay = characters
 }
