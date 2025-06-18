@@ -13,16 +13,19 @@ import (
 )
 
 type Game struct {
-	levels      []*level.Level
-	turnManager turnManager
+	levels            []*level.Level
+	currentLevelIndex int
+	turnManager       turnManager
 
 	gameScreen *ebiten.Image
 	status     Status
 
 	// TODO Maybe is not needed? Use status instead?
-	needsRestart        bool
-	shake               *Shake
+	needsRestart bool
+	shake        *Shake
+	// delays
 	enemyTurnDelayTimer int
+	nextLevelDelayTimer int
 }
 
 type turnManager struct {
@@ -49,22 +52,13 @@ func (t turnManager) getPlayerType(playerType config.PlayerType) *entities.Playe
 
 func NewGame() *Game {
 	g := Game{
-		levels: []*level.Level{level.NewLevel0()},
+		levels: []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2()},
 		turnManager: turnManager{
 			currentTurn: 0,
 		},
 		status: Playing,
 	}
-	var characters []character
-	for _, v := range g.currentLevel().TurnOrderPattern {
-		switch actualActor := v.(type) {
-		case *entities.Enemy:
-			characters = append(characters, actualActor)
-		case entities.Player:
-			characters = append(characters, &actualActor)
-		}
-	}
-	g.turnManager.turnOrderDisplay = characters
+	g.levelToTurn()
 	return &g
 }
 
@@ -117,6 +111,7 @@ func (g *Game) Update() error {
 					for _, v := range g.currentLevel().Winning {
 						if actor.GridX == v.X && actor.GridY == v.Y {
 							g.status = Win
+							g.nextLevelDelayTimer = config.NextLevelDelayDuration
 							log.Println("YOU WIN! Merged burger reached the win tile.")
 						}
 					}
@@ -132,7 +127,25 @@ func (g *Game) Update() error {
 		g.Reset()
 		return nil
 	}
+	if g.status == Win {
+		if g.nextLevelDelayTimer > 0 {
+			g.nextLevelDelayTimer--
+			return nil
+		} else {
+			g.increaseLevel()
+			g.levelToTurn()
+		}
+	}
 	return nil
+}
+
+func (g *Game) increaseLevel() {
+	if len(g.levels) <= g.currentLevelIndex {
+		// no more levels :'(
+		return
+	}
+	g.currentLevelIndex++
+	g.status = Playing
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -213,7 +226,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) currentLevel() *level.Level {
-	return g.levels[0]
+	return g.levels[g.currentLevelIndex]
 }
 
 func (g *Game) buildTurnOrderDisplay() {
@@ -339,4 +352,16 @@ func (g *Game) checkCollisionToPlayer(enemy *entities.Enemy) {
 			}
 		}
 	}
+}
+func (g *Game) levelToTurn() {
+	var characters []character
+	for _, v := range g.currentLevel().TurnOrderPattern {
+		switch actualActor := v.(type) {
+		case *entities.Enemy:
+			characters = append(characters, actualActor)
+		case entities.Player:
+			characters = append(characters, &actualActor)
+		}
+	}
+	g.turnManager.turnOrderDisplay = characters
 }

@@ -17,5 +17,6 @@ const (
 
 	// Other game stuff
 	EnemyTurnDelayDuration = 12 // 200ms delay at 60FPS (200 / (1000/60))
+	NextLevelDelayDuration = 30 // 500ms delay at 60FPS (500 / (1000/60))
 
 )
