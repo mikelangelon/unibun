@@ -1,10 +1,11 @@
 package game
 
 import (
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 	"log"
 	"log/slog"
+
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/config"
@@ -52,7 +53,7 @@ func (t turnManager) getPlayerType(playerType config.PlayerType) *entities.Playe
 
 func NewGame() *Game {
 	g := Game{
-		levels: []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2()},
+		levels: []*level.Level{level.NewLevel4(), level.NewLevel1(), level.NewLevel2()},
 		turnManager: turnManager{
 			currentTurn: 0,
 		},

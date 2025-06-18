@@ -81,9 +81,10 @@ func (p *Player) Update(level Level) bool {
 	if !playerAttemptedMove {
 		return false
 	}
-	if level.IsWalkable(targetX, targetY) {
-		p.GridX = targetX
-		p.GridY = targetY
+	if !level.IsWalkable(targetX, targetY) {
+		return false
 	}
+	p.GridX = targetX
+	p.GridY = targetY
 	return true
 }

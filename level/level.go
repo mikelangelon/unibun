@@ -1,8 +1,9 @@
 package level
 
 import (
-	"github.com/mikelangelon/unibun/entities"
 	"image/color"
+
+	"github.com/mikelangelon/unibun/entities"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"

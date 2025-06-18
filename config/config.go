@@ -16,7 +16,7 @@ const (
 	WindowHeight = screenHeight + PaddingTop + PaddingBottom
 
 	// Other game stuff
-	EnemyTurnDelayDuration = 12 // 200ms delay at 60FPS (200 / (1000/60))
+	EnemyTurnDelayDuration = 6  // 100ms delay at 60FPS (100 / (1000/60))
 	NextLevelDelayDuration = 30 // 500ms delay at 60FPS (500 / (1000/60))
 
 )
