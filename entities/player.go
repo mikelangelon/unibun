@@ -2,9 +2,10 @@ package entities
 
 import (
 	"bytes"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"image"
 	"log/slog"
+
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/assets"
@@ -62,29 +63,62 @@ func (p *Player) Draw(screen *ebiten.Image) {
 }
 
 func (p *Player) Update(level Level) bool {
-	targetX, targetY := p.GridX, p.GridY
-	playerAttemptedMove := false
+	dx, dy := 0, 0
 
+	// Check for directional input
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) || inpututil.IsKeyJustPressed(ebiten.KeyA) {
-		targetX--
-		playerAttemptedMove = true
+		dx = -1
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) || inpututil.IsKeyJustPressed(ebiten.KeyD) {
-		targetX++
-		playerAttemptedMove = true
+		dx = 1
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) || inpututil.IsKeyJustPressed(ebiten.KeyW) {
-		targetY--
-		playerAttemptedMove = true
+		dy = -1
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) || inpututil.IsKeyJustPressed(ebiten.KeyS) {
-		targetY++
-		playerAttemptedMove = true
+		dy = 1
 	}
-	if !playerAttemptedMove {
+	if dx == 0 && dy == 0 {
 		return false
 	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyShiftLeft) {
+		return p.dash(level, dx, dy)
+	}
+	return p.move(level, dx, dy)
+}
+
+// move is a single step movement
+func (p *Player) move(level Level, dx, dy int) bool {
+	targetX := p.GridX + dx
+	targetY := p.GridY + dy
+
 	if !level.IsWalkable(targetX, targetY) {
 		return false
 	}
 	p.GridX = targetX
 	p.GridY = targetY
 	return true
+}
+
+// dash is moving until next obstacle
+func (p *Player) dash(level Level, dx, dy int) bool {
+	currentX, currentY := p.GridX, p.GridY
+	movedInDash := false
+
+	for {
+		nextX, nextY := currentX+dx, currentY+dy
+		if level.IsWalkable(nextX, nextY) {
+			currentX = nextX
+			currentY = nextY
+			movedInDash = true
+		} else {
+			// Hit an obstacle or wall
+			break
+		}
+	}
+
+	if movedInDash {
+		p.GridX = currentX
+		p.GridY = currentY
+		return true
+	}
+	return false
 }
