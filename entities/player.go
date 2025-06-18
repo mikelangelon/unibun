@@ -16,6 +16,8 @@ type Player struct {
 	GridX, GridY int
 	PlayerType   config.PlayerType
 	Image        *ebiten.Image
+
+	dashMove *dashMove
 }
 
 type Level interface {
@@ -63,9 +65,11 @@ func (p *Player) Draw(screen *ebiten.Image) {
 }
 
 func (p *Player) Update(level Level) bool {
+	if p.dashMove != nil {
+		// If currently dashing, process the next step of the dash.
+		return p.processDashStep()
+	}
 	dx, dy := 0, 0
-
-	// Check for directional input
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) || inpututil.IsKeyJustPressed(ebiten.KeyA) {
 		dx = -1
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) || inpututil.IsKeyJustPressed(ebiten.KeyD) {
@@ -75,18 +79,26 @@ func (p *Player) Update(level Level) bool {
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) || inpututil.IsKeyJustPressed(ebiten.KeyS) {
 		dy = 1
 	}
+
 	if dx == 0 && dy == 0 {
-		return false
+		return false // Nothing to update
 	}
 
-	if ebiten.IsKeyPressed(ebiten.KeyShiftLeft) {
-		return p.dash(level, dx, dy)
+	isShiftPressed := ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
+	if isShiftPressed {
+		// Attempt to start a dash.
+		if p.startDash(level, dx, dy) {
+			// Dash successfully initiated. The turn is not over yet;
+			return false
+		}
+		return false
+	} else {
+		return p.performSingleMove(level, dx, dy)
 	}
-	return p.move(level, dx, dy)
 }
 
 // move is a single step movement
-func (p *Player) move(level Level, dx, dy int) bool {
+func (p *Player) performSingleMove(level Level, dx, dy int) bool {
 	targetX := p.GridX + dx
 	targetY := p.GridY + dy
 
@@ -96,29 +108,4 @@ func (p *Player) move(level Level, dx, dy int) bool {
 	p.GridX = targetX
 	p.GridY = targetY
 	return true
-}
-
-// dash is moving until next obstacle
-func (p *Player) dash(level Level, dx, dy int) bool {
-	currentX, currentY := p.GridX, p.GridY
-	movedInDash := false
-
-	for {
-		nextX, nextY := currentX+dx, currentY+dy
-		if level.IsWalkable(nextX, nextY) {
-			currentX = nextX
-			currentY = nextY
-			movedInDash = true
-		} else {
-			// Hit an obstacle or wall
-			break
-		}
-	}
-
-	if movedInDash {
-		p.GridX = currentX
-		p.GridY = currentY
-		return true
-	}
-	return false
 }

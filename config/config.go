@@ -19,4 +19,5 @@ const (
 	EnemyTurnDelayDuration = 6  // 100ms delay at 60FPS (100 / (1000/60))
 	NextLevelDelayDuration = 30 // 500ms delay at 60FPS (500 / (1000/60))
 
+	DashStepDelay = 1 // Increase for slower speed
 )
