@@ -53,7 +53,7 @@ func (t turnManager) getPlayerType(playerType config.PlayerType) *entities.Playe
 
 func NewGame() *Game {
 	g := Game{
-		levels: []*level.Level{level.NewLevel4(), level.NewLevel1(), level.NewLevel2()},
+		levels: []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2()},
 		turnManager: turnManager{
 			currentTurn: 0,
 		},
@@ -105,6 +105,9 @@ func (g *Game) Update() error {
 					patty.GridY = pattyNextY
 				}
 			}
+			// check if buns are colliding
+			g.bunCollidesBun(actor)
+
 			if !g.alreadyMerged() {
 				g.attemptMergeBurger()
 			} else {
@@ -138,6 +141,22 @@ func (g *Game) Update() error {
 		}
 	}
 	return nil
+}
+
+func (g *Game) bunCollidesBun(player *entities.Player) {
+	if player.PlayerType != config.TopBun && player.PlayerType != config.BottomBun {
+		return
+	}
+
+	otherBunType := config.BottomBun
+	if player.PlayerType == config.BottomBun {
+		otherBunType = config.TopBun
+	}
+	otherBun := g.turnManager.getPlayerType(otherBunType)
+	if otherBun != nil && player.GridX == otherBun.GridX && player.GridY == otherBun.GridY {
+		log.Println("Buns collided!")
+		g.needsRestart = true
+	}
 }
 
 func (g *Game) increaseLevel() {
