@@ -69,7 +69,7 @@ func (g *Game) Update() error {
 	}
 	actorEntry := g.turnManager.turnOrderDisplay[0]
 	switch actor := actorEntry.(type) {
-	case *entities.Enemy:
+	case entities.Enemier:
 		if g.enemyTurnDelayTimer > 0 {
 			g.enemyTurnDelayTimer--
 			return nil
@@ -228,8 +228,8 @@ func (g *Game) drawTurnOrder(screen *ebiten.Image) {
 		switch item := entity.(type) {
 		case *entities.Player:
 			drawIcon(screen, item.Image, iconX, iconY)
-		case *entities.Enemy:
-			drawIcon(screen, item.Image, iconX, iconY)
+		case entities.Enemier:
+			drawIcon(screen, item.Image(), iconX, iconY)
 		}
 	}
 }
@@ -253,7 +253,7 @@ func (g *Game) buildTurnOrderDisplay() {
 	firstElement := g.turnManager.turnOrderDisplay[0]
 	g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay[1:], firstElement)
 	switch g.turnManager.turnOrderDisplay[0].(type) {
-	case *entities.Enemy:
+	case *entities.PathEnemy, *entities.Enemy:
 		g.enemyTurnDelayTimer = config.EnemyTurnDelayDuration
 	}
 }
@@ -354,6 +354,8 @@ func (g *Game) Reset() {
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {
 		switch actualActor := v.(type) {
+		case *entities.PathEnemy:
+			characters = append(characters, actualActor)
 		case *entities.Enemy:
 			characters = append(characters, actualActor)
 		case entities.Player:
@@ -363,7 +365,7 @@ func (g *Game) Reset() {
 	g.turnManager.turnOrderDisplay = characters
 }
 
-func (g *Game) checkCollisionToPlayer(enemy *entities.Enemy) {
+func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 	for _, v := range g.turnManager.turnOrderDisplay {
 		switch player := v.(type) {
 		case *entities.Player:
@@ -377,7 +379,7 @@ func (g *Game) levelToTurn() {
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {
 		switch actualActor := v.(type) {
-		case *entities.Enemy:
+		case entities.Enemier:
 			characters = append(characters, actualActor)
 		case entities.Player:
 			characters = append(characters, &actualActor)

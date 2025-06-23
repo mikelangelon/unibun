@@ -10,9 +10,16 @@ import (
 	"math/rand"
 )
 
+// TODO Rename this monstruosity name
+type Enemier interface {
+	Draw(screen *ebiten.Image)
+	Update(level Level) bool
+	Collision(player *Player) bool
+	Image() *ebiten.Image
+}
 type Enemy struct {
 	gridX, gridY int
-	Image        *ebiten.Image
+	image        *ebiten.Image
 }
 
 func NewEnemy(startX, startY int) *Enemy {
@@ -25,7 +32,7 @@ func NewEnemy(startX, startY int) *Enemy {
 	return &Enemy{
 		gridX: startX,
 		gridY: startY,
-		Image: img,
+		image: img,
 	}
 }
 
@@ -34,7 +41,7 @@ func (e *Enemy) Draw(screen *ebiten.Image) {
 	pixelX := float64(e.gridX * config.TileSize)
 	pixelY := float64(e.gridY * config.TileSize)
 	op.GeoM.Translate(pixelX, pixelY)
-	screen.DrawImage(e.Image, op)
+	screen.DrawImage(e.image, op)
 }
 
 func (e *Enemy) Update(level Level) bool {
@@ -62,4 +69,8 @@ func (e *Enemy) Update(level Level) bool {
 
 func (e *Enemy) Collision(player *Player) bool {
 	return e.gridX == player.GridX && e.gridY == player.GridY
+}
+
+func (e *Enemy) Image() *ebiten.Image {
+	return e.image
 }
