@@ -7,5 +7,6 @@ const (
 	BottomBun
 	BurguerPatty
 	Cheese
+	Lettuce
 	MergedBurgerType
 )

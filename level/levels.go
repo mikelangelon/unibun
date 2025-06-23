@@ -42,6 +42,7 @@ func NewLevel0() *Level {
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(3, 5, config.BottomBun),
 		entities.NewPlayer(2, 1, config.Cheese),
+		entities.NewPlayer(2, 2, config.Lettuce),
 		entities.NewEnemy(10, 10),
 		entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pidgeon),
 	}
@@ -113,6 +114,7 @@ func NewLevel2() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(10, 10, config.TopBun),
 		entities.NewPlayer(1, 13, config.BottomBun),
+		entities.NewPlayer(10, 12, config.Lettuce),
 		entities.NewEnemy(1, 1),
 	}
 	return lvl

@@ -67,7 +67,7 @@ func (t turnManager) getPlayerTypes(playerType config.PlayerType) []*entities.Pl
 
 func NewGame() *Game {
 	g := Game{
-		levels: []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2()},
+		levels: []*level.Level{level.NewLevel2(), level.NewLevel1(), level.NewLevel2()},
 		turnManager: turnManager{
 			currentTurn: 0,
 		},
@@ -130,6 +130,9 @@ func (g *Game) Update() error {
 
 			// check bun colliding cheese
 			g.checkBunCheeseMerge()
+
+			// check bun colliding lettuce
+			g.checkBunLettuceMerge()
 
 			if !g.alreadyMerged() {
 				g.attemptMergeBurger()
@@ -199,24 +202,51 @@ func (g *Game) checkBunCheeseMerge() {
 		}
 	}
 }
+
 func (g *Game) cheesePower(bun, cheese *entities.Player) {
 	log.Println("Bun and Cheese merged! Bun can now dash.")
 	bun.CanDash = true // Grant dash capability to this bun
-
-	// Draw new image bun + cheese
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, float64(0)/2.0)
-	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
-	mergedImage.DrawImage(bun.Image, op)
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, float64(-10)/2.0)
-	mergedImage.DrawImage(cheese.Image, op)
-
-	bun.Image = mergedImage
+	bun.Image = merge2Images(bun.Image, cheese.Image)
 	// Remove cheese from turn order display
 	var newTurnOrder []character
 	for _, char := range g.turnManager.turnOrderDisplay {
 		if char == cheese {
+			continue
+		}
+		newTurnOrder = append(newTurnOrder, char)
+	}
+	g.turnManager.turnOrderDisplay = newTurnOrder
+}
+
+func (g *Game) checkBunLettuceMerge() {
+	lettucePlayers := g.turnManager.getPlayerTypes(config.Lettuce)
+	if len(lettucePlayers) == 0 {
+		return
+	}
+
+	topBun := g.turnManager.getPlayerType(config.TopBun)
+	bottomBun := g.turnManager.getPlayerType(config.BottomBun)
+
+	for _, lettuce := range lettucePlayers {
+		if topBun != nil && topBun.CollisionTo(lettuce.GridX, lettuce.GridY) {
+			g.lettucePower(topBun, lettuce)
+			return
+		}
+		if bottomBun != nil && bottomBun.CollisionTo(lettuce.GridX, lettuce.GridY) {
+			g.lettucePower(bottomBun, lettuce)
+			return
+		}
+	}
+}
+
+func (g *Game) lettucePower(bun, lettuce *entities.Player) {
+	slog.Info("Bun and Lettuce merged! Bun can now walk through walls")
+	bun.CanWalkThroughWalls = true // Grant power of walking on through the walls
+	bun.Image = merge2Images(bun.Image, lettuce.Image)
+
+	var newTurnOrder []character
+	for _, char := range g.turnManager.turnOrderDisplay {
+		if char == lettuce {
 			continue
 		}
 		newTurnOrder = append(newTurnOrder, char)
@@ -475,4 +505,15 @@ func (g *Game) levelToTurn() {
 		}
 	}
 	g.turnManager.turnOrderDisplay = characters
+}
+
+func merge2Images(img1, img2 *ebiten.Image) *ebiten.Image {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(0)/2.0)
+	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
+	mergedImage.DrawImage(img1, op)
+	op = &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(-10)/2.0)
+	mergedImage.DrawImage(img2, op)
+	return mergedImage
 }

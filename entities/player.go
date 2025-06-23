@@ -14,15 +14,17 @@ import (
 )
 
 type Player struct {
-	GridX, GridY int
-	PlayerType   config.PlayerType
-	Image        *ebiten.Image
-	CanDash      bool
-	IsActiveTurn bool
-	pulseOffset  float64
+	GridX, GridY        int
+	PlayerType          config.PlayerType
+	Image               *ebiten.Image
+	CanDash             bool
+	CanWalkThroughWalls bool
+	IsActiveTurn        bool
+	pulseOffset         float64
 
 	initialGridX, initialGridY int
 	initialCanDash             bool
+	initialCanWalkThroughWalls bool
 
 	dashMove *dashMove
 }
@@ -40,8 +42,11 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 		b = assets.BottomBun
 	case config.Cheese:
 		b = assets.Cheese
+	case config.Lettuce:
+		b = assets.Cheese
 	case config.BurguerPatty:
 		b = assets.BurgerPatty
+
 	}
 	playerDecoded, _, err := image.Decode(bytes.NewReader(b))
 	if err != nil {
@@ -57,14 +62,16 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 	offsettedImg.DrawImage(img, op)
 
 	p := Player{
-		GridX:          startX,
-		GridY:          startY,
-		Image:          offsettedImg,
-		PlayerType:     playerType,
-		CanDash:        false,
-		initialGridX:   startX,
-		initialGridY:   startY,
-		initialCanDash: false,
+		GridX:                      startX,
+		GridY:                      startY,
+		Image:                      offsettedImg,
+		PlayerType:                 playerType,
+		CanDash:                    false,
+		CanWalkThroughWalls:        false,
+		initialGridX:               startX,
+		initialGridY:               startY,
+		initialCanDash:             false,
+		initialCanWalkThroughWalls: false,
 	}
 	return p
 }
@@ -136,6 +143,11 @@ func (p *Player) performSingleMove(level Level, dx, dy int) bool {
 	targetX := p.GridX + dx
 	targetY := p.GridY + dy
 
+	if p.CanWalkThroughWalls {
+		p.GridX = targetX
+		p.GridY = targetY
+		return true
+	}
 	if !level.IsWalkable(targetX, targetY) {
 		return false
 	}
