@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"image"
 	"log/slog"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
@@ -16,6 +17,12 @@ type Player struct {
 	GridX, GridY int
 	PlayerType   config.PlayerType
 	Image        *ebiten.Image
+	CanDash      bool
+	IsActiveTurn bool
+	pulseOffset  float64
+
+	initialGridX, initialGridY int
+	initialCanDash             bool
 
 	dashMove *dashMove
 }
@@ -48,22 +55,37 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, offsetY)
 	offsettedImg.DrawImage(img, op)
-	return Player{
-		GridX:      startX,
-		GridY:      startY,
-		Image:      offsettedImg,
-		PlayerType: playerType,
+
+	p := Player{
+		GridX:          startX,
+		GridY:          startY,
+		Image:          offsettedImg,
+		PlayerType:     playerType,
+		CanDash:        false,
+		initialGridX:   startX,
+		initialGridY:   startY,
+		initialCanDash: false,
 	}
+	return p
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
+	if p.IsActiveTurn {
+		brightness := 1.25 + 0.25*math.Sin(p.pulseOffset/15.0)
+		var cm ebiten.ColorScale
+		cm.Scale(float32(brightness), float32(brightness), float32(brightness), 1.0)
+		op.ColorScale = cm
+		p.pulseOffset++ // Increment offset for brightty animation
+	}
 	pixelX := float64(p.GridX * config.TileSize)
 	pixelY := float64(p.GridY * config.TileSize)
 	op.GeoM.Translate(pixelX, pixelY)
 	screen.DrawImage(p.Image, op)
 }
-
+func (p *Player) CollisionTo(gridX, gridY int) bool {
+	return p.GridX == gridX && p.GridY == gridY
+}
 func (p *Player) Update(level Level) bool {
 	if p.dashMove != nil {
 		// If currently dashing, process the next step of the dash.
@@ -86,7 +108,10 @@ func (p *Player) Update(level Level) bool {
 
 	isShiftPressed := ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
 	if isShiftPressed {
-		// Attempt to start a dash.
+
+		if !p.CanDash {
+			return false
+		}
 		if p.startDash(level, dx, dy) {
 			// Dash successfully initiated. The turn is not over yet;
 			return false
@@ -95,6 +120,15 @@ func (p *Player) Update(level Level) bool {
 	} else {
 		return p.performSingleMove(level, dx, dy)
 	}
+}
+
+func (p *Player) Reset() {
+	p.GridX = p.initialGridX
+	p.GridY = p.initialGridY
+	p.CanDash = p.initialCanDash
+	p.dashMove = nil
+	p.pulseOffset = 0.0
+	p.IsActiveTurn = false
 }
 
 // move is a single step movement

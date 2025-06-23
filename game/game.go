@@ -37,6 +37,7 @@ type turnManager struct {
 type character interface {
 	Draw(screen *ebiten.Image)
 	Update(level entities.Level) bool
+	Reset()
 }
 
 func (t turnManager) getPlayerType(playerType config.PlayerType) *entities.Player {
@@ -51,6 +52,19 @@ func (t turnManager) getPlayerType(playerType config.PlayerType) *entities.Playe
 	return nil
 }
 
+func (t turnManager) getPlayerTypes(playerType config.PlayerType) []*entities.Player {
+	var types []*entities.Player
+	for _, v := range t.turnOrderDisplay {
+		switch item := v.(type) {
+		case *entities.Player:
+			if item.PlayerType == playerType {
+				types = append(types, item)
+			}
+		}
+	}
+	return types
+}
+
 func NewGame() *Game {
 	g := Game{
 		levels: []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2()},
@@ -60,6 +74,12 @@ func NewGame() *Game {
 		status: Playing,
 	}
 	g.levelToTurn()
+
+	if len(g.turnManager.turnOrderDisplay) > 0 {
+		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
+			p.IsActiveTurn = true
+		}
+	}
 	return &g
 }
 
@@ -107,6 +127,9 @@ func (g *Game) Update() error {
 			}
 			// check if buns are colliding
 			g.bunCollidesBun(actor)
+
+			// check bun colliding cheese
+			g.checkBunCheeseMerge()
 
 			if !g.alreadyMerged() {
 				g.attemptMergeBurger()
@@ -157,6 +180,48 @@ func (g *Game) bunCollidesBun(player *entities.Player) {
 		log.Println("Buns collided!")
 		g.needsRestart = true
 	}
+}
+
+// checkBunCheeseMerge checks if bun collides to cheese, or the other way around
+func (g *Game) checkBunCheeseMerge() {
+	cheeses := g.turnManager.getPlayerTypes(config.Cheese)
+	if len(cheeses) == 0 {
+		return
+	}
+	topBun := g.turnManager.getPlayerType(config.TopBun)
+	bottomBun := g.turnManager.getPlayerType(config.BottomBun)
+	for _, v := range cheeses {
+		if topBun != nil && v.CollisionTo(topBun.GridX, topBun.GridY) {
+			g.cheesePower(topBun, v)
+		}
+		if bottomBun != nil && v.CollisionTo(bottomBun.GridX, bottomBun.GridY) {
+			g.cheesePower(bottomBun, v)
+		}
+	}
+}
+func (g *Game) cheesePower(bun, cheese *entities.Player) {
+	log.Println("Bun and Cheese merged! Bun can now dash.")
+	bun.CanDash = true // Grant dash capability to this bun
+
+	// Draw new image bun + cheese
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(0)/2.0)
+	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
+	mergedImage.DrawImage(bun.Image, op)
+	op = &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(0, float64(-10)/2.0)
+	mergedImage.DrawImage(cheese.Image, op)
+
+	bun.Image = mergedImage
+	// Remove cheese from turn order display
+	var newTurnOrder []character
+	for _, char := range g.turnManager.turnOrderDisplay {
+		if char == cheese {
+			continue
+		}
+		newTurnOrder = append(newTurnOrder, char)
+	}
+	g.turnManager.turnOrderDisplay = newTurnOrder
 }
 
 func (g *Game) increaseLevel() {
@@ -250,8 +315,21 @@ func (g *Game) currentLevel() *level.Level {
 }
 
 func (g *Game) buildTurnOrderDisplay() {
+	if len(g.turnManager.turnOrderDisplay) == 0 {
+		return
+	}
+
+	if oldActor, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
+		oldActor.IsActiveTurn = false
+	}
+
 	firstElement := g.turnManager.turnOrderDisplay[0]
 	g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay[1:], firstElement)
+
+	if newActor, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
+		newActor.IsActiveTurn = true
+	}
+
 	switch g.turnManager.turnOrderDisplay[0].(type) {
 	case *entities.PathEnemy, *entities.Enemy:
 		g.enemyTurnDelayTimer = config.EnemyTurnDelayDuration
@@ -351,6 +429,10 @@ func (g *Game) Reset() {
 	log.Println("Game Over! Restarting...")
 	g.needsRestart = false
 	g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
+	for _, char := range g.turnManager.turnOrderDisplay {
+		char.Reset()
+	}
+
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {
 		switch actualActor := v.(type) {
@@ -363,6 +445,12 @@ func (g *Game) Reset() {
 		}
 	}
 	g.turnManager.turnOrderDisplay = characters
+
+	if len(g.turnManager.turnOrderDisplay) > 0 {
+		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
+			p.IsActiveTurn = true
+		}
+	}
 }
 
 func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
@@ -375,6 +463,7 @@ func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 		}
 	}
 }
+
 func (g *Game) levelToTurn() {
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {

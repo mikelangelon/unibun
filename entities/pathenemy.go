@@ -18,9 +18,10 @@ type PathEnemy struct {
 	direction        int // 1 for forward, -1 for backward
 
 	// Store initial state for reset TODO find better way
-	initialPathIndex int
-	initialDirection int
-	initialAsset     []byte
+	initialGridX, initialGridY int
+	initialPathIndex           int
+	initialDirection           int
+	initialAsset               []byte
 }
 
 func NewPathEnemy(startX, startY int, path []image.Point, enemyAsset []byte) *PathEnemy {
@@ -51,6 +52,8 @@ func NewPathEnemy(startX, startY int, path []image.Point, enemyAsset []byte) *Pa
 		GridY:            initialY,
 		image:            img,
 		path:             path,
+		initialGridX:     initialX,
+		initialGridY:     initialY,
 		currentPathIndex: 0,
 		direction:        1,
 		initialPathIndex: 0,

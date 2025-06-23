@@ -2,12 +2,13 @@ package entities
 
 import (
 	"bytes"
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mikelangelon/unibun/assets"
-	"github.com/mikelangelon/unibun/config"
 	"image"
 	"log/slog"
 	"math/rand"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/mikelangelon/unibun/assets"
+	"github.com/mikelangelon/unibun/config"
 )
 
 // TODO Rename this monstruosity name
@@ -16,10 +17,12 @@ type Enemier interface {
 	Update(level Level) bool
 	Collision(player *Player) bool
 	Image() *ebiten.Image
+	Reset()
 }
 type Enemy struct {
-	gridX, gridY int
-	image        *ebiten.Image
+	gridX, gridY               int
+	initialGridX, initialGridY int
+	image                      *ebiten.Image
 }
 
 func NewEnemy(startX, startY int) *Enemy {
@@ -30,9 +33,11 @@ func NewEnemy(startX, startY int) *Enemy {
 	}
 	img := ebiten.NewImageFromImage(playerDecoded)
 	return &Enemy{
-		gridX: startX,
-		gridY: startY,
-		image: img,
+		gridX:        startX,
+		gridY:        startY,
+		initialGridX: startX,
+		initialGridY: startY,
+		image:        img,
 	}
 }
 
@@ -73,4 +78,9 @@ func (e *Enemy) Collision(player *Player) bool {
 
 func (e *Enemy) Image() *ebiten.Image {
 	return e.image
+}
+
+func (e *Enemy) Reset() {
+	e.gridX = e.initialGridX
+	e.gridY = e.initialGridY
 }
