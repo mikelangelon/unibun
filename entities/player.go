@@ -43,7 +43,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 	case config.Cheese:
 		b = assets.Cheese
 	case config.Lettuce:
-		b = assets.Cheese
+		b = assets.Lettuce
 	case config.BurguerPatty:
 		b = assets.BurgerPatty
 
