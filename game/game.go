@@ -76,15 +76,7 @@ func (t turnManager) getPlayerTypes(playerType config.PlayerType) []*entities.Pl
 }
 
 func NewGame() *Game {
-	g := Game{
-		levels: []*level.Level{level.NewLevel2(), level.NewLevel1(), level.NewLevel2()},
-		turnManager: turnManager{
-			currentTurn: 0,
-		},
-		status: Playing,
-	}
-	g.levelToTurn()
-
+	g := Game{}
 	if len(g.turnManager.turnOrderDisplay) > 0 {
 		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
 			p.IsActiveTurn = true
@@ -96,6 +88,7 @@ func NewGame() *Game {
 	}
 	g.menuBackground = ebiten.NewImageFromImage(img)
 
+	g.initLevels()
 	g.initMenu()
 	g.currentGameState = StateMenu
 	return &g
@@ -105,7 +98,6 @@ func (g *Game) Update() error {
 	case StateMenu:
 		return g.updateMenu()
 	case StatePlaying, StateRandom:
-		// TODO: separate Random from Playing
 		return g.updatePlaying()
 	case StateExiting:
 		os.Exit(0)
@@ -190,12 +182,31 @@ func (g *Game) updatePlaying() error {
 		if g.nextLevelDelayTimer > 0 {
 			g.nextLevelDelayTimer--
 			return nil
+		}
+		if g.currentGameState == StateRandom {
+			g.startRandomGame()
 		} else {
 			g.increaseLevel()
 			g.levelToTurn()
 		}
 	}
 	return nil
+}
+
+func (g *Game) initLevels() {
+	g.levels = []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
+	g.currentLevelIndex = 0
+	g.status = Playing
+	g.levelToTurn()
+}
+
+func (g *Game) startRandomGame() {
+	slog.Info("Starting new random game")
+	g.currentGameState = StateRandom
+	g.levels = []*level.Level{level.NewRandomLevel()}
+	g.currentLevelIndex = 0
+	g.status = Playing
+	g.levelToTurn()
 }
 
 func (g *Game) bunCollidesBun(player *entities.Player) {

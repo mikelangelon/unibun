@@ -26,6 +26,7 @@ func (g *Game) initMenu() {
 		{
 			Text: "Play",
 			Action: func(game *Game) {
+				game.initLevels()
 				game.currentGameState = StatePlaying
 				log.Println("Starting new game (Play)")
 			},
@@ -33,9 +34,7 @@ func (g *Game) initMenu() {
 		{
 			Text: "Random",
 			Action: func(game *Game) {
-				game.currentGameState = StateRandom
-				// TODO Add new game mode
-				log.Println("Starting new game (Random)")
+				game.startRandomGame()
 			},
 		},
 		{
