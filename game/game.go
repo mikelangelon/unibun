@@ -1,13 +1,17 @@
 package game
 
 import (
+	"bytes"
+	"image"
 	"image/color"
 	"log"
 	"log/slog"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 	"github.com/mikelangelon/unibun/level"
@@ -27,6 +31,12 @@ type Game struct {
 	// delays
 	enemyTurnDelayTimer int
 	nextLevelDelayTimer int
+
+	// Menu related fields
+	currentGameState   GameState
+	menuBackground     *ebiten.Image
+	menuOptions        []MenuOption
+	selectedMenuOption int
 }
 
 type turnManager struct {
@@ -80,10 +90,29 @@ func NewGame() *Game {
 			p.IsActiveTurn = true
 		}
 	}
+	img, _, err := image.Decode(bytes.NewReader(assets.MenuBackground))
+	if err != nil {
+		log.Fatal(err)
+	}
+	g.menuBackground = ebiten.NewImageFromImage(img)
+
+	g.initMenu()
+	g.currentGameState = StateMenu
 	return &g
 }
-
 func (g *Game) Update() error {
+	switch g.currentGameState {
+	case StateMenu:
+		return g.updateMenu()
+	case StatePlaying, StateRandom:
+		// TODO: separate Random from Playing
+		return g.updatePlaying()
+	case StateExiting:
+		os.Exit(0)
+	}
+	return nil
+}
+func (g *Game) updatePlaying() error {
 	if g.shake != nil {
 		g.shake.Update()
 	}
@@ -262,8 +291,15 @@ func (g *Game) increaseLevel() {
 	g.currentLevelIndex++
 	g.status = Playing
 }
-
 func (g *Game) Draw(screen *ebiten.Image) {
+	switch g.currentGameState {
+	case StateMenu:
+		g.drawMenu(screen)
+	case StatePlaying, StateRandom:
+		g.drawPlaying(screen)
+	}
+}
+func (g *Game) drawPlaying(screen *ebiten.Image) {
 	screen.Fill(color.Black)
 	if g.gameScreen == nil {
 		g.gameScreen = ebiten.NewImage(g.levels[0].ScreenWidth(), g.levels[0].ScreenHeight())

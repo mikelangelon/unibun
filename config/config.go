@@ -20,4 +20,8 @@ const (
 	NextLevelDelayDuration = 30 // 500ms delay at 60FPS (500 / (1000/60))
 
 	DashStepDelay = 1 // Increase for slower speed
+
+	MenuOptionWidth   = 120
+	MenuOptionHeight  = 30
+	MenuOptionSpacing = 10
 )
