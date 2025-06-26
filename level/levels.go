@@ -255,6 +255,7 @@ func NewLevel1() *Level {
 	return lvl
 }
 
+// Trick: Avoid the lettuce!
 func NewLevel2() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}

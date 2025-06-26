@@ -43,6 +43,8 @@ type Game struct {
 	// Audio players
 	audios            audios
 	previousGameState GameState // To change music when GameState changes.
+
+	mergeAnimation *mergeAnimation
 }
 
 type turnManager struct {
@@ -106,6 +108,7 @@ func NewGame() *Game {
 	g.currentGameState = StateMenu
 	g.previousGameState = -1
 	g.resetTimer = 0
+	g.mergeAnimation = &mergeAnimation{}
 	return &g
 }
 func (g *Game) Update() error {
@@ -141,6 +144,11 @@ func (g *Game) handleGameStateChange() {
 func (g *Game) updatePlaying() error {
 	if g.shake != nil {
 		g.shake.Update()
+	}
+
+	if g.mergeAnimation.isActive {
+		g.updateMergeAnimation()
+		return nil
 	}
 
 	if g.needsRestart {
@@ -220,7 +228,9 @@ func (g *Game) updatePlaying() error {
 					} else {
 						g.checkWinCondition(g.turnManager.getPlayerType(config.MergedBurgerType))
 					}
-					g.advanceTurn()
+					if !g.mergeAnimation.isActive {
+						g.advanceTurn()
+					}
 				}
 			}
 		}
@@ -238,6 +248,26 @@ func (g *Game) updatePlaying() error {
 		}
 	}
 	return nil
+}
+
+func (g *Game) updateMergeAnimation() {
+	if !g.mergeAnimation.isActive {
+		return
+	}
+	g.mergeAnimation.Update()
+
+	if g.mergeAnimation.timer <= 0 {
+		g.mergeAnimation.isActive = false
+		g.performMerge()
+		g.advanceTurn()
+	}
+}
+
+func (g *Game) drawMergeAnimation(screen *ebiten.Image) {
+	topBun := g.turnManager.getPlayerType(config.TopBun)
+	bottomBun := g.turnManager.getPlayerType(config.BottomBun)
+	patty := g.patty
+	g.mergeAnimation.draw(screen, patty, topBun, bottomBun)
 }
 
 func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
@@ -289,7 +319,7 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 }
 
 func (g *Game) initLevels() {
-	g.levels = []*level.Level{level.NewLevelLettucePresentation(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
+	g.levels = []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
 	g.currentLevelIndex = 0
 	g.status = Playing
 	g.levelToTurn()
@@ -415,13 +445,25 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 	g.currentLevel().Draw(g.gameScreen)
 	for _, character := range g.turnManager.turnOrderDisplay {
 		if character != nil {
+			if g.mergeAnimation.isActive {
+				if p, ok := character.(*entities.Player); ok {
+					if p.PlayerType == config.TopBun || p.PlayerType == config.BottomBun {
+						continue
+					}
+				}
+			}
 			character.Draw(g.gameScreen)
 		}
 	}
 	if g.patty != nil {
-		g.patty.Draw(g.gameScreen)
+		if !g.mergeAnimation.isActive {
+			g.patty.Draw(g.gameScreen)
+		}
 	}
 
+	if g.mergeAnimation.isActive {
+		g.drawMergeAnimation(g.gameScreen)
+	}
 	// Draw winning message
 	if g.status == Win {
 		drawWinning(g.gameScreen)
@@ -519,10 +561,7 @@ func (g *Game) advanceTurn() {
 	g.buildTurnOrderDisplay()
 }
 
-func (g *Game) attemptMergeBurger() {
-	if !g.canBeMerged() {
-		return
-	}
+func (g *Game) performMerge() {
 	slog.Info("Burger components united!")
 	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
 
@@ -557,6 +596,16 @@ func (g *Game) attemptMergeBurger() {
 	charactersWithoutMergedOnes = append(charactersWithoutMergedOnes, &mergedPlayer)
 	g.turnManager.turnOrderDisplay = charactersWithoutMergedOnes
 	g.patty = nil
+}
+
+func (g *Game) attemptMergeBurger() {
+	if g.mergeAnimation.isActive || !g.canBeMerged() {
+		return
+	}
+	topBun := g.turnManager.getPlayerType(config.TopBun)
+	bottomBun := g.turnManager.getPlayerType(config.BottomBun)
+	// Start animation
+	g.mergeAnimation.activate(g.patty, topBun, bottomBun)
 }
 
 func (g *Game) canBeMerged() bool {
