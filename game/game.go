@@ -38,6 +38,7 @@ type Game struct {
 	menuOptions        []MenuOption
 	selectedMenuOption int
 
+	resetTimer int
 	// Audio players
 	audios            audios
 	previousGameState GameState // To change music when GameState changes.
@@ -103,6 +104,7 @@ func NewGame() *Game {
 	g.initMenu()
 	g.currentGameState = StateMenu
 	g.previousGameState = -1
+	g.resetTimer = 0
 	return &g
 }
 func (g *Game) Update() error {
@@ -138,6 +140,14 @@ func (g *Game) handleGameStateChange() {
 func (g *Game) updatePlaying() error {
 	if g.shake != nil {
 		g.shake.Update()
+	}
+
+	if g.needsRestart {
+		g.resetTimer--
+		if g.resetTimer <= 0 {
+			g.Reset()
+		}
+		return nil
 	}
 	actorEntry := g.turnManager.turnOrderDisplay[0]
 	switch actor := actorEntry.(type) {
@@ -221,10 +231,6 @@ func (g *Game) updatePlaying() error {
 				}
 			}
 		}
-	}
-	if g.needsRestart {
-		g.Reset()
-		return nil
 	}
 	if g.status == Win {
 		if g.nextLevelDelayTimer > 0 {
@@ -572,6 +578,7 @@ func (g *Game) alreadyMerged() bool {
 func (g *Game) Reset() {
 	log.Println("Game Over! Restarting...")
 	g.needsRestart = false
+	g.resetTimer = 0
 	g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
 	for _, char := range g.turnManager.turnOrderDisplay {
 		char.Reset()
@@ -602,6 +609,10 @@ func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 		switch player := v.(type) {
 		case *entities.Player:
 			if enemy.Collision(player) {
+				if !g.needsRestart {
+					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
+					g.resetTimer = shakeDefaultDuration + 10 // delay a bit
+				}
 				g.audios.eatingSoundPlayer.Rewind()
 				g.audios.eatingSoundPlayer.Play()
 				g.needsRestart = true
@@ -615,6 +626,11 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 		switch enemy := v.(type) {
 		case entities.Enemier:
 			if enemy.Collision(player) {
+				if !g.needsRestart {
+					// TODO Duplicated code, move in a different function?
+					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
+					g.resetTimer = shakeDefaultDuration + 10
+				}
 				g.audios.eatingSoundPlayer.Rewind()
 				g.audios.eatingSoundPlayer.Play()
 				g.needsRestart = true
