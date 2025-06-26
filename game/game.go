@@ -21,6 +21,7 @@ type Game struct {
 	levels            []*level.Level
 	currentLevelIndex int
 	turnManager       turnManager
+	patty             *entities.BurgerPatty
 
 	gameScreen *ebiten.Image
 	status     Status
@@ -195,17 +196,16 @@ func (g *Game) updatePlaying() error {
 
 					// Start of step-by-step collision checks
 					isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
-					patty := g.currentLevel().BurgerPatty
-					if isBun && patty != nil && actor.GridX == patty.GridX && actor.GridY == patty.GridY {
-						pattyNextX := patty.GridX + (actor.GridX - oldX)
-						pattyNextY := patty.GridY + (actor.GridY - oldY)
+					if isBun && g.patty != nil && actor.GridX == g.patty.GridX && actor.GridY == g.patty.GridY {
+						pattyNextX := g.patty.GridX + (actor.GridX - oldX)
+						pattyNextY := g.patty.GridY + (actor.GridY - oldY)
 						if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) {
 							actor.GridX, actor.GridY = oldX, oldY // Revert move
 							moved = false
 							break
 						} else {
-							patty.GridX = pattyNextX
-							patty.GridY = pattyNextY
+							g.patty.GridX = pattyNextX
+							g.patty.GridY = pattyNextY
 						}
 					}
 
@@ -397,8 +397,8 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 			character.Draw(g.gameScreen)
 		}
 	}
-	if g.currentLevel().BurgerPatty != nil {
-		g.currentLevel().BurgerPatty.Draw(g.gameScreen)
+	if g.patty != nil {
+		g.patty.Draw(g.gameScreen)
 	}
 
 	// Draw winning message
@@ -514,15 +514,16 @@ func (g *Game) attemptMergeBurger() {
 	mergedImage.DrawImage(bottomBunPlayer.Image, op)
 	op = &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, float64(0)/2.0)
-	mergedImage.DrawImage(g.currentLevel().BurgerPatty.Image, op)
+	mergedImage.DrawImage(g.patty.Image, op)
 	op = &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(0, float64(-10)/2.0)
 	mergedImage.DrawImage(topBunPlayer.Image, op)
 
 	mergedPlayer := entities.Player{
-		GridX:      g.currentLevel().BurgerPatty.GridX,
-		GridY:      g.currentLevel().BurgerPatty.GridY,
+		GridX:      g.patty.GridX,
+		GridY:      g.patty.GridY,
 		PlayerType: config.MergedBurgerType,
+		Speed:      1,
 		Image:      mergedImage,
 	}
 	var charactersWithoutMergedOnes []character
@@ -534,11 +535,11 @@ func (g *Game) attemptMergeBurger() {
 	}
 	charactersWithoutMergedOnes = append(charactersWithoutMergedOnes, &mergedPlayer)
 	g.turnManager.turnOrderDisplay = charactersWithoutMergedOnes
-	g.currentLevel().BurgerPatty = nil
+	g.patty = nil
 }
 
 func (g *Game) canBeMerged() bool {
-	if g.alreadyMerged() || g.currentLevel().BurgerPatty == nil {
+	if g.alreadyMerged() || g.patty == nil {
 		// Already merged, or components missing for a merge
 		return false
 	}
@@ -580,6 +581,8 @@ func (g *Game) Reset() {
 	g.needsRestart = false
 	g.resetTimer = 0
 	g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
+	g.patty = &g.currentLevel().BurgerPatty
+
 	for _, char := range g.turnManager.turnOrderDisplay {
 		char.Reset()
 	}
@@ -640,6 +643,7 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 }
 
 func (g *Game) levelToTurn() {
+	g.patty = &g.currentLevel().BurgerPatty
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {
 		switch actualActor := v.(type) {

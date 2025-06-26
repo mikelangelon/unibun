@@ -17,7 +17,6 @@ func NewRandomLevel() *Level {
 
 	// Clear existing entities
 	lvl.TurnOrderPattern = []interface{}{}
-	lvl.BurgerPatty = nil
 	lvl.Winning = []Position{}
 
 	// Put some walls randomly

@@ -14,7 +14,7 @@ import (
 type Level struct {
 	cells            [][]Cell
 	TurnOrderPattern []interface{}
-	BurgerPatty      *entities.BurgerPatty
+	BurgerPatty      entities.BurgerPatty
 	Winning          []Position
 }
 

@@ -14,13 +14,13 @@ type BurgerPatty struct {
 	Image        *ebiten.Image
 }
 
-func NewBurgerPatty(startX, startY int) *BurgerPatty {
+func NewBurgerPatty(startX, startY int) BurgerPatty {
 	playerDecoded, _, err := image.Decode(bytes.NewReader(assets.BurgerPatty))
 	if err != nil {
-		return nil
+		return BurgerPatty{}
 	}
 	img := ebiten.NewImageFromImage(playerDecoded)
-	return &BurgerPatty{
+	return BurgerPatty{
 		GridX: startX,
 		GridY: startY,
 		Image: img,

@@ -21,7 +21,7 @@ type Player struct {
 	CanWalkThroughWalls bool
 	IsActiveTurn        bool
 	pulseOffset         float64
-	speed               int
+	Speed               int
 
 	initialGridX, initialGridY int
 	initialCanDash             bool
@@ -69,7 +69,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 		PlayerType:                 playerType,
 		CanDash:                    false,
 		CanWalkThroughWalls:        false,
-		speed:                      2,
+		Speed:                      2,
 		initialGridX:               startX,
 		initialGridY:               startY,
 		initialCanDash:             false,
@@ -131,7 +131,7 @@ func (p *Player) Reset() {
 func (p *Player) CalculateMovePath(level Level, dx, dy int) []image.Point {
 	var path []image.Point
 
-	for i := 1; i <= p.speed; i++ {
+	for i := 1; i <= p.Speed; i++ {
 		nextX, nextY := p.GridX+dx*i, p.GridY+dy*i
 
 		if p.CanWalkThroughWalls {
