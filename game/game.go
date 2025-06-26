@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/assets"
@@ -34,15 +35,18 @@ type Game struct {
 	nextLevelDelayTimer int
 
 	// Menu related fields
-	currentGameState   GameState
-	menuBackground     *ebiten.Image
-	menuOptions        []MenuOption
-	selectedMenuOption int
+	currentGameState        GameState
+	menuBackground          *ebiten.Image
+	menuOptions             []MenuOption
+	selectedMenuOption      int
+	pauseMenuOptions        []MenuOption
+	selectedPauseMenuOption int
 
 	resetTimer int
 	// Audio players
 	audios            audios
 	previousGameState GameState // To change music when GameState changes.
+	stateBeforePause  GameState
 
 	mergeAnimation *mergeAnimation
 }
@@ -105,11 +109,51 @@ func NewGame() *Game {
 
 	g.initLevels()
 	g.initMenu()
+	g.initPauseMenu()
 	g.currentGameState = StateMenu
 	g.previousGameState = -1
 	g.resetTimer = 0
 	g.mergeAnimation = &mergeAnimation{}
 	return &g
+}
+
+func (g *Game) initPauseMenu() {
+	g.pauseMenuOptions = []MenuOption{
+		{
+			Text: "Continue",
+			Action: func(game *Game) {
+				game.currentGameState = game.stateBeforePause
+			},
+		},
+		{
+			Text: "Restart",
+			Action: func(game *Game) {
+				game.Reset()
+				game.currentGameState = game.stateBeforePause
+			},
+		},
+		{
+			Text: "Menu",
+			Action: func(game *Game) {
+				game.currentGameState = StateMenu
+			},
+		},
+	}
+
+	totalMenuHeight := config.MenuOptionHeight*3 + config.MenuOptionSpacing*2
+	startY := (config.WindowHeight - totalMenuHeight) / 2
+	centerX := config.WindowWidth / 2
+
+	for i := range g.pauseMenuOptions {
+		option := &g.pauseMenuOptions[i]
+		option.Rect = image.Rect(
+			centerX-config.MenuOptionWidth/2,
+			startY+i*(config.MenuOptionHeight+config.MenuOptionSpacing),
+			centerX+config.MenuOptionWidth/2,
+			startY+i*(config.MenuOptionHeight+config.MenuOptionSpacing)+config.MenuOptionHeight,
+		)
+	}
+	g.selectedPauseMenuOption = 0
 }
 func (g *Game) Update() error {
 	if g.currentGameState != g.previousGameState {
@@ -122,6 +166,8 @@ func (g *Game) Update() error {
 		return g.updateMenu()
 	case StatePlaying, StateRandom:
 		return g.updatePlaying()
+	case StatePaused:
+		return g.updatePaused()
 	case StateExiting:
 		os.Exit(0)
 	}
@@ -129,6 +175,12 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) handleGameStateChange() {
+	if g.currentGameState == StatePaused {
+		return
+	}
+	if g.previousGameState == StatePaused && g.currentGameState != StateMenu {
+		return
+	}
 	g.audios.menuMusicPlayer.Pause()
 	g.audios.mainMusicPlayer.Pause()
 
@@ -141,7 +193,38 @@ func (g *Game) handleGameStateChange() {
 		g.audios.mainMusicPlayer.Play()
 	}
 }
+
+func (g *Game) updatePaused() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+		g.selectedPauseMenuOption--
+		if g.selectedPauseMenuOption < 0 {
+			g.selectedPauseMenuOption = len(g.pauseMenuOptions) - 1
+		}
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+		g.selectedPauseMenuOption++
+		if g.selectedPauseMenuOption >= len(g.pauseMenuOptions) {
+			g.selectedPauseMenuOption = 0
+		}
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		g.pauseMenuOptions[g.selectedPauseMenuOption].Action(g)
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		g.currentGameState = g.previousGameState
+	}
+	return nil
+}
+
 func (g *Game) updatePlaying() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
+		g.stateBeforePause = g.currentGameState
+		g.currentGameState = StatePaused
+		return nil
+	}
+
 	if g.shake != nil {
 		g.shake.Update()
 	}
@@ -430,10 +513,32 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.currentGameState {
 	case StateMenu:
 		g.drawMenu(screen)
-	case StatePlaying, StateRandom:
+	case StatePlaying, StateRandom, StatePaused:
 		g.drawPlaying(screen)
+		if g.currentGameState == StatePaused {
+			g.drawPaused(screen)
+		}
 	}
 }
+
+func (g *Game) drawPaused(screen *ebiten.Image) {
+	ebitenutil.DrawRect(screen, 0, 0, float64(config.WindowWidth), float64(config.WindowHeight), color.RGBA{0, 0, 0, 128})
+
+	for i, option := range g.pauseMenuOptions {
+		btnColor := color.RGBA{0x40, 0x40, 0x40, 0xFF}
+		if i == g.selectedPauseMenuOption {
+			btnColor = color.RGBA{0x80, 0x80, 0x80, 0xFF}
+		}
+		ebitenutil.DrawRect(screen, float64(option.Rect.Min.X), float64(option.Rect.Min.Y), float64(option.Rect.Dx()), float64(option.Rect.Dy()), btnColor)
+
+		charWidth := 6
+		charHeight := 16
+		textX := option.Rect.Min.X + (option.Rect.Dx()-len(option.Text)*charWidth)/2
+		textY := option.Rect.Min.Y + (option.Rect.Dy()-charHeight)/2
+		ebitenutil.DebugPrintAt(screen, option.Text, textX, textY)
+	}
+}
+
 func (g *Game) drawPlaying(screen *ebiten.Image) {
 	screen.Fill(color.Black)
 	if g.gameScreen == nil {

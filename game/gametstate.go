@@ -7,4 +7,5 @@ const (
 	StatePlaying
 	StateRandom
 	StateExiting
+	StatePaused
 )
