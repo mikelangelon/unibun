@@ -1,9 +1,6 @@
 package level
 
 import (
-	"image"
-
-	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 )
@@ -35,16 +32,17 @@ func NewLevel0() *Level {
 			{X: 6, Y: 6},
 		},
 	}
-	examplePath := []image.Point{
-		{X: 10, Y: 4}, {X: 11, Y: 4}, {X: 12, Y: 4}, {X: 13, Y: 4}, {X: 14, Y: 4},
-	}
+	// examplePath := []image.Point{
+	// 	{X: 10, Y: 4}, {X: 11, Y: 4}, {X: 12, Y: 4}, {X: 13, Y: 4}, {X: 14, Y: 4},
+	// }
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(3, 5, config.BottomBun),
 		entities.NewPlayer(2, 1, config.Cheese),
 		entities.NewPlayer(2, 2, config.Lettuce),
-		entities.NewEnemy(10, 10),
-		entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pidgeon),
+		// entities.NewEnemy(10, 10),
+		entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
+		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pidgeon),
 	}
 	return lvl
 }

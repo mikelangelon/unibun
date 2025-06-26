@@ -152,6 +152,25 @@ func (g *Game) updatePlaying() error {
 	}
 	actorEntry := g.turnManager.turnOrderDisplay[0]
 	switch actor := actorEntry.(type) {
+	case *entities.FollowerEnemy:
+		if g.enemyTurnDelayTimer > 0 {
+			g.enemyTurnDelayTimer--
+			return nil
+		}
+		targetPlayer := g.turnManager.getPlayerType(actor.GetTargetPlayerType())
+		actor.SetTarget(targetPlayer.GridX, targetPlayer.GridY) // Set target before update
+		// FIXME Duplicated from Enemier case
+		if g.enemyTurnDelayTimer > 0 {
+			g.enemyTurnDelayTimer--
+			return nil
+		}
+		g.checkCollisionToPlayer(actor)
+		enemyMoved := actor.Update(g.currentLevel())
+		if !enemyMoved {
+			break
+		}
+		g.checkCollisionToPlayer(actor)
+		g.advanceTurn()
 	case entities.Enemier:
 		if g.enemyTurnDelayTimer > 0 {
 			g.enemyTurnDelayTimer--
@@ -593,6 +612,8 @@ func (g *Game) Reset() {
 		case *entities.PathEnemy:
 			characters = append(characters, actualActor)
 		case *entities.Enemy:
+			characters = append(characters, actualActor)
+		case *entities.FollowerEnemy:
 			characters = append(characters, actualActor)
 		case entities.Player:
 			characters = append(characters, &actualActor)
