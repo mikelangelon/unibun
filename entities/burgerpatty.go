@@ -1,12 +1,10 @@
 package entities
 
 import (
-	"bytes"
-	"github.com/mikelangelon/unibun/assets"
-	"github.com/mikelangelon/unibun/config"
-	"image"
-
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/mikelangelon/unibun/assets"
+	"github.com/mikelangelon/unibun/common"
+	"github.com/mikelangelon/unibun/config"
 )
 
 type BurgerPatty struct {
@@ -15,15 +13,10 @@ type BurgerPatty struct {
 }
 
 func NewBurgerPatty(startX, startY int) BurgerPatty {
-	playerDecoded, _, err := image.Decode(bytes.NewReader(assets.BurgerPatty))
-	if err != nil {
-		return BurgerPatty{}
-	}
-	img := ebiten.NewImageFromImage(playerDecoded)
 	return BurgerPatty{
 		GridX: startX,
 		GridY: startY,
-		Image: img,
+		Image: common.GetImage(assets.BurgerPatty),
 	}
 }
 

@@ -1,9 +1,8 @@
 package entities
 
 import (
-	"bytes"
+	"github.com/mikelangelon/unibun/common"
 	"image"
-	"log/slog"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -49,12 +48,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 		b = assets.BurgerPatty
 
 	}
-	playerDecoded, _, err := image.Decode(bytes.NewReader(b))
-	if err != nil {
-		slog.Error("unexpected error decoding player image", "error", err)
-		return Player{}
-	}
-	img := ebiten.NewImageFromImage(playerDecoded)
+	img := common.GetImage(b)
 	// calculate offsets for centering
 	offsettedImg := ebiten.NewImage(32, 32)
 	offsetY := float64(32-18) / 2.0

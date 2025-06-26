@@ -1,9 +1,7 @@
 package entities
 
 import (
-	"bytes"
-	"image"
-	"log/slog"
+	"github.com/mikelangelon/unibun/common"
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -26,18 +24,12 @@ type Enemy struct {
 }
 
 func NewEnemy(startX, startY int) *Enemy {
-	playerDecoded, _, err := image.Decode(bytes.NewReader(assets.Pidgeon))
-	if err != nil {
-		slog.Error("unexpected error decoding enemy image", "error", err)
-		return nil
-	}
-	img := ebiten.NewImageFromImage(playerDecoded)
 	return &Enemy{
 		gridX:        startX,
 		gridY:        startY,
 		initialGridX: startX,
 		initialGridY: startY,
-		image:        img,
+		image:        common.GetImage(assets.Pidgeon),
 	}
 }
 
@@ -50,26 +42,8 @@ func (e *Enemy) Draw(screen *ebiten.Image) {
 }
 
 func (e *Enemy) Update(level Level) bool {
-	moved := false
-
-	possibleMoves := []struct{ dx, dy int }{
-		{0, -1}, {0, 1}, {-1, 0}, {1, 0},
-	}
-	rand.Shuffle(len(possibleMoves), func(i, j int) {
-		possibleMoves[i], possibleMoves[j] = possibleMoves[j], possibleMoves[i]
-	})
-
-	for _, move := range possibleMoves {
-		targetX, targetY := e.gridX+move.dx, e.gridY+move.dy
-		if !level.IsWalkable(targetX, targetY) {
-			continue
-		}
-		e.gridX = targetX
-		e.gridY = targetY
-		moved = true
-		break
-	}
-	return moved
+	e.gridX, e.gridY = nextRandomMove(level, e.gridX, e.gridY)
+	return true
 }
 
 func (e *Enemy) Collision(player *Player) bool {
@@ -83,4 +57,22 @@ func (e *Enemy) Image() *ebiten.Image {
 func (e *Enemy) Reset() {
 	e.gridX = e.initialGridX
 	e.gridY = e.initialGridY
+}
+
+// Common functions
+func nextRandomMove(level Level, x, y int) (int, int) {
+	possibleMoves := []struct{ dx, dy int }{
+		{0, -1}, {0, 1}, {-1, 0}, {1, 0},
+	}
+	rand.Shuffle(len(possibleMoves), func(i, j int) {
+		possibleMoves[i], possibleMoves[j] = possibleMoves[j], possibleMoves[i]
+	})
+	for _, move := range possibleMoves {
+		targetX, targetY := x+move.dx, y+move.dy
+		if !level.IsWalkable(targetX, targetY) {
+			continue
+		}
+		return targetX, targetY
+	}
+	return x, y
 }

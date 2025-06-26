@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"bytes"
+	"github.com/mikelangelon/unibun/common"
 	"image"
 	"log/slog"
 
@@ -28,19 +28,6 @@ func NewPathEnemy(startX, startY int, path []image.Point, enemyAsset []byte) *Pa
 	if len(path) == 0 {
 		slog.Warn("PathEnemy created with an empty path. It will not move.", "startX", startX, "startY", startY)
 	}
-
-	assetToLoad := enemyAsset
-	if assetToLoad == nil {
-		assetToLoad = assets.Cheese // Default asset if none provided
-	}
-
-	decodedImage, _, err := image.Decode(bytes.NewReader(assetToLoad))
-	if err != nil {
-		slog.Error("unexpected error decoding path enemy image", "error", err)
-		return nil
-	}
-	img := ebiten.NewImageFromImage(decodedImage)
-
 	initialX, initialY := startX, startY
 	if len(path) > 0 {
 		initialX = path[0].X
@@ -50,7 +37,7 @@ func NewPathEnemy(startX, startY int, path []image.Point, enemyAsset []byte) *Pa
 	return &PathEnemy{
 		GridX:            initialX,
 		GridY:            initialY,
-		image:            img,
+		image:            common.GetImage(assets.Pidgeon),
 		path:             path,
 		initialGridX:     initialX,
 		initialGridY:     initialY,

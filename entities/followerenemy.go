@@ -1,9 +1,7 @@
 package entities
 
 import (
-	"bytes"
-	"image"
-	"log/slog"
+	"github.com/mikelangelon/unibun/common"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,18 +18,12 @@ type FollowerEnemy struct {
 }
 
 func NewFollowerEnemy(startX, startY int, targetType config.PlayerType) *FollowerEnemy {
-	decodedImage, _, err := image.Decode(bytes.NewReader(assets.Pidgeon))
-	if err != nil {
-		slog.Error("unexpected error decoding follower enemy image", "error", err)
-		return nil
-	}
-	img := ebiten.NewImageFromImage(decodedImage)
 	return &FollowerEnemy{
 		gridX:            startX,
 		gridY:            startY,
 		initialGridX:     startX,
 		initialGridY:     startY,
-		image:            img,
+		image:            common.GetImage(assets.Pidgeon),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,
@@ -53,7 +45,9 @@ func (fe *FollowerEnemy) SetTarget(x, y int) {
 
 func (fe *FollowerEnemy) Update(level Level) bool {
 	if fe.targetX == -1 || fe.targetY == -1 {
-		return false
+		// Move random if there is no target
+		fe.gridX, fe.gridY = nextRandomMove(level, fe.gridX, fe.gridY)
+		return true
 	}
 
 	moved := false

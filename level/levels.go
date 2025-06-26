@@ -1,6 +1,8 @@
 package level
 
 import (
+	"github.com/mikelangelon/unibun/assets"
+	"github.com/mikelangelon/unibun/common"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 )
@@ -45,6 +47,7 @@ func NewLevel0() *Level {
 		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pidgeon),
 	}
+	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
 }
 

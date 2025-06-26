@@ -20,6 +20,9 @@ var (
 	//go:embed lettuce.png
 	Lettuce []byte
 
+	//go:embed client.png
+	Client []byte
+
 	//go:embed pidgeon.png
 	Pidgeon []byte
 

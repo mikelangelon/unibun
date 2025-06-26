@@ -16,6 +16,7 @@ type Level struct {
 	TurnOrderPattern []interface{}
 	BurgerPatty      entities.BurgerPatty
 	Winning          []Position
+	WinningImg       *ebiten.Image
 }
 
 func (l *Level) Draw(screen *ebiten.Image) {
@@ -52,8 +53,9 @@ func (l *Level) Draw(screen *ebiten.Image) {
 	for _, v := range l.Winning {
 		winRectX := float64(v.X * config.TileSize)
 		winRectY := float64(v.Y * config.TileSize)
-		winTileMarkerColor := color.RGBA{R: 0xff, G: 0xff, B: 0x00, A: 0xcc}
-		ebitenutil.DrawRect(screen, winRectX, winRectY, float64(config.TileSize), float64(config.TileSize), winTileMarkerColor)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(winRectX, winRectY)
+		screen.DrawImage(l.WinningImg, op)
 	}
 }
 

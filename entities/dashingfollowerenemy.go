@@ -1,12 +1,9 @@
 package entities
 
 import (
-	"bytes"
-	"image"
-	"log/slog"
+	"github.com/mikelangelon/unibun/common"
 	"math"
 
-	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/config"
 )
@@ -23,19 +20,12 @@ type DashingFollowerEnemy struct {
 
 func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, turnsToDash int) *DashingFollowerEnemy {
 	// TODO Use a different image
-	decodedImage, _, err := image.Decode(bytes.NewReader(assets.Pidgeon))
-	if err != nil {
-		slog.Error("unexpected error decoding dashing follower enemy image", "error", err)
-		return nil
-	}
-	img := ebiten.NewImageFromImage(decodedImage)
-
 	fe := FollowerEnemy{
 		gridX:            startX,
 		gridY:            startY,
 		initialGridX:     startX,
 		initialGridY:     startY,
-		image:            img,
+		image:            common.GetImage(assets.Pidgeon),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,

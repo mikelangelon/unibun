@@ -251,9 +251,11 @@ func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
 		}
 	} else if dfe, ok := enemy.(*entities.DashingFollowerEnemy); ok {
 		targetPlayer := g.turnManager.getPlayerType(dfe.GetTargetPlayerType())
+		gridX, gridY := -1, -1
 		if targetPlayer != nil {
-			dfe.SetTarget(targetPlayer.GridX, targetPlayer.GridY)
+			gridX, gridY = targetPlayer.GridX, targetPlayer.GridY
 		}
+		dfe.SetTarget(gridX, gridY)
 	}
 
 	g.checkCollisionToPlayer(enemy)
