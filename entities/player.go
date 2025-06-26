@@ -27,7 +27,7 @@ type Player struct {
 	initialCanDash             bool
 	initialCanWalkThroughWalls bool
 
-	dashMove *dashMove
+	dashState *DashState
 }
 
 type Level interface {
@@ -74,6 +74,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 		initialGridY:               startY,
 		initialCanDash:             false,
 		initialCanWalkThroughWalls: false,
+		dashState:                  NewDashState(),
 	}
 	return p
 }
@@ -96,9 +97,13 @@ func (p *Player) CollisionTo(gridX, gridY int) bool {
 	return p.GridX == gridX && p.GridY == gridY
 }
 func (p *Player) Update(level Level) bool {
-	if p.dashMove != nil {
+	if p.dashState != nil && p.dashState.IsActive() {
 		// If currently dashing, process the next step of the dash.
-		return p.processDashStep()
+		newX, newY, moved, finished := p.dashState.Update(p.GridX, p.GridY, level, p.CanWalkThroughWalls)
+		p.GridX = newX
+		p.GridY = newY
+
+		return moved || finished
 	}
 	return true
 }
@@ -122,8 +127,9 @@ func (p *Player) GetMoveInput() (dx, dy int, isMoving, isDashing bool) {
 func (p *Player) Reset() {
 	p.GridX = p.initialGridX
 	p.GridY = p.initialGridY
-	p.CanDash = p.initialCanDash
-	p.dashMove = nil
+	p.CanDash = p.initialCanDash                         // Reset dash capability
+	p.CanWalkThroughWalls = p.initialCanWalkThroughWalls // Reset walk through walls capability
+	p.dashState.Reset()                                  // Reset dash state
 	p.pulseOffset = 0.0
 	p.IsActiveTurn = false
 }
@@ -145,4 +151,9 @@ func (p *Player) CalculateMovePath(level Level, dx, dy int) []image.Point {
 		path = append(path, image.Point{X: nextX, Y: nextY})
 	}
 	return path
+}
+
+// StartDash initiates a dash movement for the player.
+func (p *Player) StartDash(level Level, dx, dy int) bool {
+	return p.dashState.Start(p.GridX, p.GridY, dx, dy, p.Speed, level, p.CanWalkThroughWalls)
 }

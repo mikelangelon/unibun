@@ -38,10 +38,11 @@ func NewLevel0() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(3, 5, config.BottomBun),
-		entities.NewPlayer(2, 1, config.Cheese),
-		entities.NewPlayer(2, 2, config.Lettuce),
+		//entities.NewPlayer(2, 1, config.Cheese),
+		//entities.NewPlayer(2, 2, config.Lettuce),
+		entities.NewDashingFollowerEnemy(1, 13, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
 		// entities.NewEnemy(10, 10),
-		entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
+		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pidgeon),
 	}
 	return lvl
