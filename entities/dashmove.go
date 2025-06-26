@@ -8,8 +8,8 @@ type dashMove struct {
 	dashStepTimer   int
 }
 
-// startDash calculates the path for a dash and initializes the dashing state.
-func (p *Player) startDash(level Level, dx, dy int) bool {
+// StartDash calculates the path for a dash and initializes the dashing state.
+func (p *Player) StartDash(level Level, dx, dy int) bool {
 	p.dashMove = nil
 
 	tempPath := []struct{ X, Y int }{}

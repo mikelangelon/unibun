@@ -12,6 +12,7 @@ The plan:
 - [x] Grid map
 - [x] Move around something
 - [x] Turn base
+  - [x] Make more obvious the turn (flashing)
 - [ ] Sokoban style of moving around and pushing stuff
 - [x] Allow to push patty
   - [ ] Allow to push other objects
@@ -19,9 +20,15 @@ The plan:
   - [x] Merge as one
   - [x] Bring it to a winning position
   - [ ] Properly draw some restaurant client
-- [ ] Different ingredients? Cheese, Lettuce, Bacon...
+- [x] Different ingredients? Cheese, Lettuce, Bacon...
+  - [x] Cheese --> make bun faster
+  - [x] Lettuce --> cross walls
+  - [ ] Bacon --> ??
 - [ ] Enemies? Rats, Pidgeons
-- [ ] Pass to next level
+  - [ ] Pidgeon --> random move
+  - [ ] Rat
+  - [ ] Animate characters
+- [x] Pass to next level
 
 ## Packages
 - Game --> Main game with all the logic

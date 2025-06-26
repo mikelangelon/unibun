@@ -21,6 +21,7 @@ type Player struct {
 	CanWalkThroughWalls bool
 	IsActiveTurn        bool
 	pulseOffset         float64
+	speed               int
 
 	initialGridX, initialGridY int
 	initialCanDash             bool
@@ -68,6 +69,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 		PlayerType:                 playerType,
 		CanDash:                    false,
 		CanWalkThroughWalls:        false,
+		speed:                      2,
 		initialGridX:               startX,
 		initialGridY:               startY,
 		initialCanDash:             false,
@@ -98,7 +100,10 @@ func (p *Player) Update(level Level) bool {
 		// If currently dashing, process the next step of the dash.
 		return p.processDashStep()
 	}
-	dx, dy := 0, 0
+	return true
+}
+
+func (p *Player) GetMoveInput() (dx, dy int, isMoving, isDashing bool) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) || inpututil.IsKeyJustPressed(ebiten.KeyA) {
 		dx = -1
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) || inpututil.IsKeyJustPressed(ebiten.KeyD) {
@@ -109,24 +114,9 @@ func (p *Player) Update(level Level) bool {
 		dy = 1
 	}
 
-	if dx == 0 && dy == 0 {
-		return false // Nothing to update
-	}
-
-	isShiftPressed := ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
-	if isShiftPressed {
-
-		if !p.CanDash {
-			return false
-		}
-		if p.startDash(level, dx, dy) {
-			// Dash successfully initiated. The turn is not over yet;
-			return false
-		}
-		return false
-	} else {
-		return p.performSingleMove(level, dx, dy)
-	}
+	isMoving = dx != 0 || dy != 0
+	isDashing = isMoving && ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
+	return
 }
 
 func (p *Player) Reset() {
@@ -138,20 +128,21 @@ func (p *Player) Reset() {
 	p.IsActiveTurn = false
 }
 
-// move is a single step movement
-func (p *Player) performSingleMove(level Level, dx, dy int) bool {
-	targetX := p.GridX + dx
-	targetY := p.GridY + dy
+func (p *Player) CalculateMovePath(level Level, dx, dy int) []image.Point {
+	var path []image.Point
 
-	if p.CanWalkThroughWalls {
-		p.GridX = targetX
-		p.GridY = targetY
-		return true
+	for i := 1; i <= p.speed; i++ {
+		nextX, nextY := p.GridX+dx*i, p.GridY+dy*i
+
+		if p.CanWalkThroughWalls {
+			path = append(path, image.Point{X: nextX, Y: nextY})
+			continue
+		}
+
+		if !level.IsWalkable(nextX, nextY) {
+			break
+		}
+		path = append(path, image.Point{X: nextX, Y: nextY})
 	}
-	if !level.IsWalkable(targetX, targetY) {
-		return false
-	}
-	p.GridX = targetX
-	p.GridY = targetY
-	return true
+	return path
 }

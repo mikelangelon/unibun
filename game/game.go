@@ -124,53 +124,70 @@ func (g *Game) updatePlaying() error {
 		g.advanceTurn()
 	case *entities.Player:
 		if actor != nil {
-			oldX, oldY := actor.GridX, actor.GridY
-			playedMoved := actor.Update(g.currentLevel())
-			if !playedMoved {
+			if !actor.Update(g.currentLevel()) {
 				break
 			}
-			isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
-			patty := g.currentLevel().BurgerPatty
-			if isBun && patty != nil && actor.GridX == patty.GridX && actor.GridY == patty.GridY {
-				// A bun is trying to move into the patty's space. Try to push it.
-				pattyNextX := patty.GridX + (actor.GridX - oldX)
-				pattyNextY := patty.GridY + (actor.GridY - oldY)
-				canPattyMove := g.currentLevel().IsWalkable(pattyNextX, pattyNextY)
-				if !canPattyMove {
-					playedMoved = false
-					actor.GridX, actor.GridY = oldX, oldY
-					break
-				} else {
-					// TODO Check if patty's next spot is occupied by other players, enemies...
-					patty.GridX = pattyNextX
-					patty.GridY = pattyNextY
-				}
+			// TODO Too many if statements. Try to fix
+			dx, dy, isMoving, isDashing := actor.GetMoveInput()
+			if !isMoving {
+				break
 			}
-			// check if buns are colliding
-			g.bunCollidesBun(actor)
 
-			// check bun colliding cheese
-			g.checkBunCheeseMerge()
-
-			// check bun colliding lettuce
-			g.checkBunLettuceMerge()
-
-			if !g.alreadyMerged() {
-				g.attemptMergeBurger()
+			if isDashing {
+				if actor.CanDash {
+					// The dash is initiated -->  Update() will keep to move in next turns
+					if actor.StartDash(g.currentLevel(), dx, dy) {
+						g.advanceTurn()
+					}
+				}
 			} else {
-				if actor.PlayerType == config.MergedBurgerType {
-					for _, v := range g.currentLevel().Winning {
-						if actor.GridX == v.X && actor.GridY == v.Y {
-							g.status = Win
-							g.nextLevelDelayTimer = config.NextLevelDelayDuration
-							log.Println("YOU WIN! Merged burger reached the win tile.")
+				path := actor.CalculateMovePath(g.currentLevel(), dx, dy)
+				if len(path) == 0 {
+					break
+				}
+
+				moved := false
+				for _, point := range path {
+					oldX, oldY := actor.GridX, actor.GridY
+					actor.GridX, actor.GridY = point.X, point.Y
+					moved = true
+
+					// Start of step-by-step collision checks
+					isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
+					patty := g.currentLevel().BurgerPatty
+					if isBun && patty != nil && actor.GridX == patty.GridX && actor.GridY == patty.GridY {
+						pattyNextX := patty.GridX + (actor.GridX - oldX)
+						pattyNextY := patty.GridY + (actor.GridY - oldY)
+						if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) {
+							actor.GridX, actor.GridY = oldX, oldY // Revert move
+							moved = false
+							break
+						} else {
+							patty.GridX = pattyNextX
+							patty.GridY = pattyNextY
 						}
 					}
 
+					oldCanDash, oldCanWalk := actor.CanDash, actor.CanWalkThroughWalls
+					g.bunCollidesBun(actor)
+					g.checkBunCheeseMerge()
+					g.checkBunLettuceMerge()
+					g.checkCollisionToPlayerOnPlayerTurn(actor)
+
+					// Stop path execution on collision/merge
+					if g.needsRestart || g.justMerged(actor, oldCanDash, oldCanWalk) {
+						break
+					}
 				}
-			}
-			if g.status == Playing {
-				g.advanceTurn()
+
+				if moved {
+					if !g.alreadyMerged() {
+						g.attemptMergeBurger()
+					} else {
+						g.checkWinCondition(g.turnManager.getPlayerType(config.MergedBurgerType))
+					}
+					g.advanceTurn()
+				}
 			}
 		}
 	}
@@ -191,6 +208,26 @@ func (g *Game) updatePlaying() error {
 		}
 	}
 	return nil
+}
+
+func (g *Game) checkWinCondition(actor *entities.Player) {
+	if actor == nil || actor.PlayerType != config.MergedBurgerType {
+		return
+	}
+	for _, v := range g.currentLevel().Winning {
+		if actor.GridX == v.X && actor.GridY == v.Y {
+			g.status = Win
+			g.nextLevelDelayTimer = config.NextLevelDelayDuration
+			log.Println("YOU WIN! Merged burger reached the win tile.")
+		}
+	}
+}
+
+func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool {
+	if p.PlayerType != config.TopBun && p.PlayerType != config.BottomBun {
+		return false
+	}
+	return (p.CanDash && !oldCanDash) || (p.CanWalkThroughWalls && !oldCanWalk)
 }
 
 func (g *Game) initLevels() {
@@ -245,9 +282,8 @@ func (g *Game) checkBunCheeseMerge() {
 
 func (g *Game) cheesePower(bun, cheese *entities.Player) {
 	log.Println("Bun and Cheese merged! Bun can now dash.")
-	bun.CanDash = true // Grant dash capability to this bun
+	bun.CanDash = true
 	bun.Image = merge2Images(bun.Image, cheese.Image)
-	// Remove cheese from turn order display
 	var newTurnOrder []character
 	for _, char := range g.turnManager.turnOrderDisplay {
 		if char == cheese {
@@ -534,6 +570,17 @@ func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 	for _, v := range g.turnManager.turnOrderDisplay {
 		switch player := v.(type) {
 		case *entities.Player:
+			if enemy.Collision(player) {
+				g.needsRestart = true
+			}
+		}
+	}
+}
+
+func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
+	for _, v := range g.turnManager.turnOrderDisplay {
+		switch enemy := v.(type) {
+		case entities.Enemier:
 			if enemy.Collision(player) {
 				g.needsRestart = true
 			}
