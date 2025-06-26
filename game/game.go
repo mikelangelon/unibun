@@ -185,6 +185,7 @@ func (g *Game) updatePlaying() error {
 					actor.GridX, actor.GridY = point.X, point.Y
 					moved = true
 
+					pushedPatty := false
 					// Start of step-by-step collision checks
 					isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
 					if isBun && g.patty != nil && actor.GridX == g.patty.GridX && actor.GridY == g.patty.GridY {
@@ -193,10 +194,11 @@ func (g *Game) updatePlaying() error {
 						if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) {
 							actor.GridX, actor.GridY = oldX, oldY // Revert move
 							moved = false
-							break
+							break // Stop path execution
 						} else {
 							g.patty.GridX = pattyNextX
 							g.patty.GridY = pattyNextY
+							pushedPatty = true
 						}
 					}
 
@@ -206,8 +208,8 @@ func (g *Game) updatePlaying() error {
 					g.checkBunLettuceMerge()
 					g.checkCollisionToPlayerOnPlayerTurn(actor)
 
-					// Stop path execution on collision/merge
-					if g.needsRestart || g.justMerged(actor, oldCanDash, oldCanWalk) {
+					// Stop path execution on collision/merge or after pushing patty
+					if g.needsRestart || g.justMerged(actor, oldCanDash, oldCanWalk) || pushedPatty {
 						break
 					}
 				}
@@ -287,7 +289,7 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 }
 
 func (g *Game) initLevels() {
-	g.levels = []*level.Level{level.NewLevel1b(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
+	g.levels = []*level.Level{level.NewLevelLettucePresentation(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
 	g.currentLevelIndex = 0
 	g.status = Playing
 	g.levelToTurn()

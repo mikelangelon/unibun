@@ -121,9 +121,11 @@ func (p *Player) GetMoveInput() (dx, dy int, isMoving, isDashing bool) {
 func (p *Player) Reset() {
 	p.GridX = p.initialGridX
 	p.GridY = p.initialGridY
-	p.CanDash = p.initialCanDash                         // Reset dash capability
-	p.CanWalkThroughWalls = p.initialCanWalkThroughWalls // Reset walk through walls capability
-	p.dashState.Reset()                                  // Reset dash state
+	p.CanDash = p.initialCanDash
+	p.CanWalkThroughWalls = p.initialCanWalkThroughWalls
+	if p.dashState != nil {
+		p.dashState.Reset()
+	}
 	p.pulseOffset = 0.0
 	p.IsActiveTurn = false
 }
