@@ -13,7 +13,7 @@ type wallShape struct {
 
 // NewRandomLevel generates a new level with random elements, as walls (wallShape).
 func NewRandomLevel() *Level {
-	lvl := NewLevel0()
+	lvl := NewEmptyLevel()
 
 	// Clear existing entities
 	lvl.TurnOrderPattern = []interface{}{}

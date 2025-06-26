@@ -5,9 +5,94 @@ import (
 	"github.com/mikelangelon/unibun/common"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
+	"image"
 )
 
 func NewLevel0() *Level {
+	w := Cell{Type: CellTypeWall}
+	c := Cell{Type: CellTypeFloor}
+	lvl := newLevel()
+	lvl.BurgerPatty = entities.NewBurgerPatty(13, 4)
+	lvl.Winning = []Position{
+		{X: 13, Y: 9},
+	}
+	lvl.cells = [][]Cell{
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, w, w, c, c, c, c, c, c, c, c, w, w, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, w, c, c, w, w, w, w, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, w, w, w, w, c, c, w, w, w, w, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+	}
+	examplePath := []image.Point{
+		{X: 10, Y: 13}, {X: 11, Y: 13}, {X: 12, Y: 13}, {X: 13, Y: 13}, {X: 14, Y: 13},
+	}
+	lvl.TurnOrderPattern = []interface{}{
+		entities.NewPlayer(3, 1, config.TopBun),
+		entities.NewPlayer(21, 1, config.BottomBun),
+		//entities.NewPlayer(2, 1, config.Cheese),
+		//entities.NewPlayer(2, 2, config.Lettuce),
+		entities.NewDashingFollowerEnemy(1, 13, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
+		// entities.NewEnemy(10, 10),
+		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
+		entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pidgeon),
+	}
+	lvl.WinningImg = common.GetImage(assets.Client)
+	return lvl
+}
+
+func NewLevel1b() *Level {
+	w := Cell{Type: CellTypeWall}
+	c := Cell{Type: CellTypeFloor}
+
+	lvl := newLevel()
+	lvl.BurgerPatty = entities.NewBurgerPatty(8, 8)
+	lvl.Winning = []Position{
+		{X: 11, Y: 10},
+	}
+	lvl.cells = [][]Cell{
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+		{w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w, w, c, c, c, c, c, w},
+		{w, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
+		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, c, w, c, w, w, w, w, c, w},
+		{w, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, w, c, c, c, c, w, w, w, w, w, w, w, w, c, w},
+		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, w, c, c, c, c, c, c, c, w},
+		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, w, c, w, w, c, w, w, w, w},
+		{w, w, c, c, c, c, c, c, c, c, w, c, c, c, c, c, w, c, w, c, c, w, w, c, w},
+		{w, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, w, c, w, c, c, w, w, c, w},
+		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, w, w, c, w, c, c, c, w, c, w},
+		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, w, c, w},
+		{w, c, c, w, w, w, w, w, w, c, w, w, w, w, c, w, c, w, w, w, w, c, w, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+	}
+	path1 := []image.Point{
+		{X: 5, Y: 3}, {X: 5, Y: 4}, {X: 5, Y: 5}, {X: 5, Y: 6}, {X: 5, Y: 7},
+	}
+	path2 := []image.Point{
+		{X: 11, Y: 7}, {X: 12, Y: 7}, {X: 13, Y: 7}, {X: 14, Y: 7},
+	}
+	lvl.TurnOrderPattern = []interface{}{
+		entities.NewPlayer(3, 1, config.TopBun),
+		entities.NewPlayer(10, 5, config.BottomBun),
+		entities.NewEnemy(10, 10),
+		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1, assets.Pidgeon),
+		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2, assets.Pidgeon),
+	}
+	return lvl
+}
+
+func NewEmptyLevel() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()

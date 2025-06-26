@@ -26,6 +26,9 @@ var (
 	//go:embed pidgeon.png
 	Pidgeon []byte
 
+	//go:embed snake.png
+	Snake []byte
+
 	//go:embed menu.png
 	MenuBackground []byte
 

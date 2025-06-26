@@ -25,7 +25,7 @@ func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, t
 		gridY:            startY,
 		initialGridX:     startX,
 		initialGridY:     startY,
-		image:            common.GetImage(assets.Pidgeon),
+		image:            common.GetImage(assets.Snake),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,

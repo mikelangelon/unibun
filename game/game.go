@@ -287,7 +287,7 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 }
 
 func (g *Game) initLevels() {
-	g.levels = []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
+	g.levels = []*level.Level{level.NewLevel1b(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
 	g.currentLevelIndex = 0
 	g.status = Playing
 	g.levelToTurn()
