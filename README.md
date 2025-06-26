@@ -29,9 +29,20 @@ The plan:
   - [ ] Rat
   - [ ] Animate characters
 - [x] Pass to next level
+- [x] Sounds
+- [x] Music
 
 ## Packages
 - Game --> Main game with all the logic
 - Entities --> Players, enemies... (*Maybe this should just be in Game package?)
 - Level --> About the grid, it should not have dependencies with the game at all
 - Config --> Params to change the game
+
+## Resources
+Music: 
+- By iemusic 
+- https://www.gamedevmarket.net/asset/8-bit-chiptune-puzzle-pack-2
+
+Eat sound: 
+- By Naht 
+- https://pixabay.com/sound-effects/eat-323883/

@@ -37,6 +37,10 @@ type Game struct {
 	menuBackground     *ebiten.Image
 	menuOptions        []MenuOption
 	selectedMenuOption int
+
+	// Audio players
+	audios            audios
+	previousGameState GameState // To change music when GameState changes.
 }
 
 type turnManager struct {
@@ -77,6 +81,13 @@ func (t turnManager) getPlayerTypes(playerType config.PlayerType) []*entities.Pl
 
 func NewGame() *Game {
 	g := Game{}
+	// init audios
+	a, err := newAudios()
+	if err != nil {
+		log.Fatal(err)
+	}
+	g.audios = a
+	// init active turn
 	if len(g.turnManager.turnOrderDisplay) > 0 {
 		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
 			p.IsActiveTurn = true
@@ -91,9 +102,15 @@ func NewGame() *Game {
 	g.initLevels()
 	g.initMenu()
 	g.currentGameState = StateMenu
+	g.previousGameState = -1
 	return &g
 }
 func (g *Game) Update() error {
+	if g.currentGameState != g.previousGameState {
+		g.handleGameStateChange()
+		g.previousGameState = g.currentGameState
+	}
+
 	switch g.currentGameState {
 	case StateMenu:
 		return g.updateMenu()
@@ -103,6 +120,20 @@ func (g *Game) Update() error {
 		os.Exit(0)
 	}
 	return nil
+}
+
+func (g *Game) handleGameStateChange() {
+	g.audios.menuMusicPlayer.Pause()
+	g.audios.mainMusicPlayer.Pause()
+
+	switch g.currentGameState {
+	case StateMenu:
+		g.audios.menuMusicPlayer.Rewind()
+		g.audios.menuMusicPlayer.Play()
+	case StatePlaying, StateRandom:
+		g.audios.mainMusicPlayer.Rewind()
+		g.audios.mainMusicPlayer.Play()
+	}
 }
 func (g *Game) updatePlaying() error {
 	if g.shake != nil {
@@ -571,6 +602,8 @@ func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 		switch player := v.(type) {
 		case *entities.Player:
 			if enemy.Collision(player) {
+				g.audios.eatingSoundPlayer.Rewind()
+				g.audios.eatingSoundPlayer.Play()
 				g.needsRestart = true
 			}
 		}
@@ -582,6 +615,8 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 		switch enemy := v.(type) {
 		case entities.Enemier:
 			if enemy.Collision(player) {
+				g.audios.eatingSoundPlayer.Rewind()
+				g.audios.eatingSoundPlayer.Play()
 				g.needsRestart = true
 			}
 		}

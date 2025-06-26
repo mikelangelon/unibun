@@ -25,4 +25,14 @@ var (
 
 	//go:embed menu.png
 	MenuBackground []byte
+
+	/**
+	Sounds
+	*/
+	//go:embed eat-323883.mp3
+	EatingSound []byte
+	//go:embed "Bonus - Character Select.mp3"
+	MenuMusic []byte
+	//go:embed "1- World Map.mp3"
+	MainMusic []byte
 )
