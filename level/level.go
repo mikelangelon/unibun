@@ -17,6 +17,7 @@ type Level struct {
 	BurgerPatty      entities.BurgerPatty
 	Winning          []Position
 	WinningImg       *ebiten.Image
+	IntroText        string
 }
 
 func (l *Level) Draw(screen *ebiten.Image) {

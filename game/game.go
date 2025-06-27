@@ -7,6 +7,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -32,6 +33,7 @@ type Game struct {
 	shake        *Shake
 	// delays
 	enemyTurnDelayTimer int
+	introDelayTimer     int
 
 	// Menu related fields
 	currentGameState        GameState
@@ -77,6 +79,7 @@ func NewGame() *Game {
 	g.previousGameState = -1
 	g.resetTimer = 0
 	g.animationManager = newAnimationManager()
+	g.introDelayTimer = 0
 
 	return &g
 }
@@ -130,6 +133,8 @@ func (g *Game) Update() error {
 		return g.updateMenu()
 	case StatePlaying, StateRandom:
 		return g.updatePlaying()
+	case StateIntro:
+		return g.updateIntro()
 	case StatePaused:
 		return g.updatePaused()
 	case StateExiting:
@@ -145,6 +150,9 @@ func (g *Game) handleGameStateChange() {
 	if g.previousGameState == StatePaused && g.currentGameState != StateMenu {
 		return
 	}
+	if g.previousGameState == StateIntro && g.currentGameState == StatePlaying {
+		return
+	}
 	g.audios.menuMusicPlayer.Pause()
 	g.audios.mainMusicPlayer.Pause()
 
@@ -152,7 +160,8 @@ func (g *Game) handleGameStateChange() {
 	case StateMenu:
 		g.audios.menuMusicPlayer.Rewind()
 		g.audios.menuMusicPlayer.Play()
-	case StatePlaying, StateRandom:
+	case StateIntro, StatePlaying, StateRandom:
+		g.introDelayTimer = 10
 		g.audios.mainMusicPlayer.Rewind()
 		g.audios.mainMusicPlayer.Play()
 	}
@@ -178,6 +187,18 @@ func (g *Game) updatePaused() error {
 
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		g.currentGameState = g.previousGameState
+	}
+	return nil
+}
+
+func (g *Game) updateIntro() error {
+	if g.introDelayTimer > 0 {
+		g.introDelayTimer--
+		return nil
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		g.currentGameState = StatePlaying
 	}
 	return nil
 }
@@ -365,6 +386,35 @@ func (g *Game) drawWinAnimation(screen *ebiten.Image) {
 	g.animationManager.drawWinningAnimation(screen)
 }
 
+func (g *Game) drawIntro(screen *ebiten.Image) {
+	if g.introDelayTimer > 0 {
+		return
+	}
+
+	overlayColor := color.RGBA{0, 0, 0, 50}
+	ebitenutil.DrawRect(screen, 0, 0, float64(config.WindowWidth), float64(config.WindowHeight), overlayColor)
+
+	boxWidth := 400
+	boxHeight := 150
+	boxX := (config.WindowWidth - boxWidth) / 2
+	boxY := (config.WindowHeight - boxHeight) / 2
+	boxColor := color.RGBA{0x20, 0x20, 0x20, 50}
+	ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxWidth), float64(boxHeight), boxColor)
+
+	introText := g.currentLevel().IntroText
+	lines := strings.Split(introText, "\n")
+	lineHeight := 16
+	totalTextHeight := len(lines) * lineHeight
+	startY := boxY + (boxHeight-totalTextHeight)/2
+
+	for i, line := range lines {
+		charWidth := 6
+		textX := boxX + (boxWidth-len(line)*charWidth)/2
+		textY := startY + i*lineHeight
+		ebitenutil.DebugPrintAt(screen, line, textX, textY)
+	}
+}
+
 func (g *Game) drawEffects(screen *ebiten.Image) {
 	g.animationManager.drawEffects(screen)
 }
@@ -425,7 +475,7 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 }
 
 func (g *Game) initLevels() {
-	g.levels = []*level.Level{level.FourSnakesReturn(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
+	g.levels = []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
 	g.currentLevelIndex = 0
 	g.status = Playing
 	g.levelToTurn()
@@ -536,8 +586,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.currentGameState {
 	case StateMenu:
 		g.drawMenu(screen)
-	case StatePlaying, StateRandom, StatePaused:
+	case StatePlaying, StateRandom, StatePaused, StateIntro:
 		g.drawPlaying(screen)
+		if g.currentGameState == StateIntro {
+			g.drawIntro(screen)
+		}
 		if g.currentGameState == StatePaused {
 			g.drawPaused(screen)
 		}

@@ -33,6 +33,7 @@ func NewLevel0() *Level {
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
+	lvl.IntroText = "Your goal is to unite the buns with the patty,\nand deliver it to the client.\n\nPress Enter to continue"
 	examplePath := []image.Point{
 		{X: 10, Y: 13}, {X: 11, Y: 13}, {X: 12, Y: 13}, {X: 13, Y: 13}, {X: 14, Y: 13},
 	}

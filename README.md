@@ -19,18 +19,21 @@ The plan:
 - [ ] Goal: 
   - [x] Merge as one
   - [x] Bring it to a winning position
-  - [ ] Properly draw some restaurant client
+  - [x] Properly draw some restaurant client
 - [x] Different ingredients? Cheese, Lettuce, Bacon...
   - [x] Cheese --> make bun faster
   - [x] Lettuce --> cross walls
   - [ ] Bacon --> ??
-- [ ] Enemies? Rats, Pidgeons
-  - [ ] Pidgeon --> random move
+- [ ] Enemies?
+  - [x] Pidgeon --> random move
+  - [x] Snake --> follow target + dash --> a bit buggy
   - [ ] Rat
   - [ ] Animate characters
 - [x] Pass to next level
 - [x] Sounds
 - [x] Music
+- [ ] Endless mode
+- [ ] Show all levels individually
 
 ## Packages
 - Game --> Main game with all the logic

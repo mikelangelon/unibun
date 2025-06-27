@@ -27,7 +27,11 @@ func (g *Game) initMenu() {
 			Text: "Play",
 			Action: func(game *Game) {
 				game.initLevels()
-				game.currentGameState = StatePlaying
+				if game.currentLevel().IntroText != "" {
+					game.currentGameState = StateIntro
+				} else {
+					game.currentGameState = StatePlaying
+				}
 				log.Println("Starting new game (Play)")
 			},
 		},

@@ -8,4 +8,5 @@ const (
 	StateRandom
 	StateExiting
 	StatePaused
+	StateIntro
 )
