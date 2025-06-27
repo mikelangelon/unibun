@@ -937,12 +937,21 @@ func (g *Game) levelToTurn() {
 }
 
 func merge2Images(img1, img2 *ebiten.Image) *ebiten.Image {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, float64(0)/2.0)
 	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
-	mergedImage.DrawImage(img1, op)
-	op = &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(0, float64(-10)/2.0)
-	mergedImage.DrawImage(img2, op)
+
+	opBase := &ebiten.DrawImageOptions{}
+	mergedImage.DrawImage(img1, opBase)
+
+	opOverlay := &ebiten.DrawImageOptions{}
+
+	w, h := img2.Bounds().Dx(), img2.Bounds().Dy()
+
+	// stretch second image to be always a 32x12 and put it on top
+	// TODO: A bit strange to have the cheese on top of the top bun... but this is simpler
+	sx := float64(config.TileSize) / float64(w)
+	sy := 12.0 / float64(h)
+	opOverlay.GeoM.Scale(sx, sy)
+	mergedImage.DrawImage(img2, opOverlay)
+
 	return mergedImage
 }
