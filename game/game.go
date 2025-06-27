@@ -290,9 +290,9 @@ func (g *Game) updatePlaying() error {
 					if isBun && g.patty != nil && actor.GridX == g.patty.GridX && actor.GridY == g.patty.GridY {
 						pattyNextX := g.patty.GridX + (actor.GridX - oldX)
 						pattyNextY := g.patty.GridY + (actor.GridY - oldY)
-						if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) {
+						if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) || g.isTileOccupiedByCharacter(pattyNextX, pattyNextY) {
 							actor.GridX, actor.GridY = oldX, oldY // Revert move
-							moved = false
+							moved = true
 							break // Stop path execution
 						} else {
 							g.patty.GridX = pattyNextX
@@ -329,6 +329,22 @@ func (g *Game) updatePlaying() error {
 	return nil
 }
 
+func (g *Game) isTileOccupiedByCharacter(x, y int) bool {
+	for _, char := range g.turnManager.turnOrderDisplay {
+		switch entity := char.(type) {
+		case *entities.Player:
+			if entity.GridX == x && entity.GridY == y {
+				return true
+			}
+		case entities.Enemier:
+			dummyPlayer := &entities.Player{GridX: x, GridY: y}
+			if entity.Collision(dummyPlayer) {
+				return true
+			}
+		}
+	}
+	return false
+}
 func (g *Game) updateMergeAnimation() {
 	if !g.animationManager.isMergeAnimationPlaying() {
 		return
@@ -782,6 +798,9 @@ func (g *Game) Reset() {
 	g.resetTimer = 0
 	g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
 	g.patty = &g.currentLevel().BurgerPatty
+	if g.patty != nil {
+		g.patty.Reset()
+	}
 
 	for _, char := range g.turnManager.turnOrderDisplay {
 		char.Reset()
