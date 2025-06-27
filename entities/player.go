@@ -1,9 +1,10 @@
 package entities
 
 import (
-	"github.com/mikelangelon/unibun/common"
 	"image"
 	"math"
+
+	"github.com/mikelangelon/unibun/common"
 
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
@@ -118,6 +119,10 @@ func (p *Player) GetMoveInput() (dx, dy int, isMoving, isDashing bool) {
 	return
 }
 
+func (p *Player) IsDashing() bool {
+	return p.dashState != nil && p.dashState.IsActive()
+}
+
 func (p *Player) Reset() {
 	p.GridX = p.initialGridX
 	p.GridY = p.initialGridY
@@ -151,5 +156,5 @@ func (p *Player) CalculateMovePath(level Level, dx, dy int) []image.Point {
 
 // StartDash initiates a dash movement for the player.
 func (p *Player) StartDash(level Level, dx, dy int) bool {
-	return p.dashState.Start(p.GridX, p.GridY, dx, dy, p.Speed, level, p.CanWalkThroughWalls)
+	return p.dashState.Start(p.GridX, p.GridY, dx, dy, 10, level, p.CanWalkThroughWalls)
 }

@@ -255,73 +255,86 @@ func (g *Game) updatePlaying() error {
 	case entities.Enemier:
 		g.handleEnemyTurn(actor)
 	case *entities.Player:
-		if actor != nil {
-			if !actor.Update(g.currentLevel()) {
-				break
+		if actor == nil {
+			break
+		}
+
+		// If player is in the middle of a dash, continue it.
+		if actor.IsDashing() {
+			actor.Update(g.currentLevel()) // Move one step
+			g.checkCollisionToPlayerOnPlayerTurn(actor)
+			if g.needsRestart {
+				return nil
 			}
-			// TODO Too many if statements. Try to fix
-			dx, dy, isMoving, isDashing := actor.GetMoveInput()
-			if !isMoving {
+			break
+		}
+
+		// If not dashing, check for new input.
+		// The original actor.Update() call was here. It's harmless for non-dashing players.
+		actor.Update(g.currentLevel())
+
+		// TODO Too many if statements. Try to fix
+		dx, dy, isMoving, isDashing := actor.GetMoveInput()
+		if !isMoving {
+			break
+		}
+
+		if isDashing {
+			if actor.CanDash {
+				// The dash is initiated -->  Update() will keep to move in next turns
+				if actor.StartDash(g.currentLevel(), dx, dy) {
+					g.advanceTurn()
+				}
+			}
+		} else {
+			path := actor.CalculateMovePath(g.currentLevel(), dx, dy)
+			if len(path) == 0 {
 				break
 			}
 
-			if isDashing {
-				if actor.CanDash {
-					// The dash is initiated -->  Update() will keep to move in next turns
-					if actor.StartDash(g.currentLevel(), dx, dy) {
-						g.advanceTurn()
+			moved := false
+			for _, point := range path {
+				oldX, oldY := actor.GridX, actor.GridY
+				actor.GridX, actor.GridY = point.X, point.Y
+				moved = true
+
+				pushedPatty := false
+				// Start of step-by-step collision checks
+				isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
+				if isBun && g.patty != nil && actor.GridX == g.patty.GridX && actor.GridY == g.patty.GridY {
+					pattyNextX := g.patty.GridX + (actor.GridX - oldX)
+					pattyNextY := g.patty.GridY + (actor.GridY - oldY)
+					if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) || g.isTileOccupiedByCharacter(pattyNextX, pattyNextY) {
+						actor.GridX, actor.GridY = oldX, oldY // Revert move
+						moved = true
+						break // Stop path execution
+					} else {
+						g.patty.GridX = pattyNextX
+						g.patty.GridY = pattyNextY
+						pushedPatty = true
 					}
 				}
-			} else {
-				path := actor.CalculateMovePath(g.currentLevel(), dx, dy)
-				if len(path) == 0 {
+
+				oldCanDash, oldCanWalk := actor.CanDash, actor.CanWalkThroughWalls
+				g.bunCollidesBun(actor)
+				g.checkBunCheeseMerge()
+				g.checkBunLettuceMerge()
+				g.checkCollisionToPlayerOnPlayerTurn(actor)
+
+				// Stop path execution on collision/merge or after pushing patty
+				if g.needsRestart || g.justMerged(actor, oldCanDash, oldCanWalk) || pushedPatty {
 					break
 				}
+			}
 
-				moved := false
-				for _, point := range path {
-					oldX, oldY := actor.GridX, actor.GridY
-					actor.GridX, actor.GridY = point.X, point.Y
-					moved = true
-
-					pushedPatty := false
-					// Start of step-by-step collision checks
-					isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
-					if isBun && g.patty != nil && actor.GridX == g.patty.GridX && actor.GridY == g.patty.GridY {
-						pattyNextX := g.patty.GridX + (actor.GridX - oldX)
-						pattyNextY := g.patty.GridY + (actor.GridY - oldY)
-						if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) || g.isTileOccupiedByCharacter(pattyNextX, pattyNextY) {
-							actor.GridX, actor.GridY = oldX, oldY // Revert move
-							moved = true
-							break // Stop path execution
-						} else {
-							g.patty.GridX = pattyNextX
-							g.patty.GridY = pattyNextY
-							pushedPatty = true
-						}
-					}
-
-					oldCanDash, oldCanWalk := actor.CanDash, actor.CanWalkThroughWalls
-					g.bunCollidesBun(actor)
-					g.checkBunCheeseMerge()
-					g.checkBunLettuceMerge()
-					g.checkCollisionToPlayerOnPlayerTurn(actor)
-
-					// Stop path execution on collision/merge or after pushing patty
-					if g.needsRestart || g.justMerged(actor, oldCanDash, oldCanWalk) || pushedPatty {
-						break
-					}
+			if moved {
+				if !g.alreadyMerged() {
+					g.attemptMergeBurger()
+				} else {
+					g.checkWinCondition(g.turnManager.getPlayerType(config.MergedBurgerType))
 				}
-
-				if moved {
-					if !g.alreadyMerged() {
-						g.attemptMergeBurger()
-					} else {
-						g.checkWinCondition(g.turnManager.getPlayerType(config.MergedBurgerType))
-					}
-					if !g.animationManager.blockingAnimation() {
-						g.advanceTurn()
-					}
+				if !g.animationManager.blockingAnimation() {
+					g.advanceTurn()
 				}
 			}
 		}
@@ -440,7 +453,7 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 }
 
 func (g *Game) initLevels() {
-	g.levels = []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
+	g.levels = []*level.Level{level.UseOtherObject(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
 	g.currentLevelIndex = 0
 	g.status = Playing
 	g.levelToTurn()
@@ -848,18 +861,27 @@ func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 }
 
 func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
-	for _, v := range g.turnManager.turnOrderDisplay {
+	for i := len(g.turnManager.turnOrderDisplay) - 1; i >= 0; i-- {
+		v := g.turnManager.turnOrderDisplay[i]
+		if v == player {
+			continue
+		}
+
 		switch enemy := v.(type) {
 		case entities.Enemier:
 			if enemy.Collision(player) {
-				if !g.needsRestart {
-					// TODO Duplicated code, move in a different function?
+				isBun := player.PlayerType == config.TopBun || player.PlayerType == config.BottomBun
+				if isBun && player.IsDashing() {
+					g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay[:i], g.turnManager.turnOrderDisplay[i+1:]...)
+					// TODO Show some confetti?
+				} else if !g.needsRestart {
 					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
 					g.resetTimer = shakeDefaultDuration + 10
+					g.audios.eatingSoundPlayer.Rewind()
+					g.audios.eatingSoundPlayer.Play()
+					g.needsRestart = true
+					return
 				}
-				g.audios.eatingSoundPlayer.Rewind()
-				g.audios.eatingSoundPlayer.Play()
-				g.needsRestart = true
 			}
 		}
 	}
