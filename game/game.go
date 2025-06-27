@@ -20,10 +20,11 @@ import (
 )
 
 type Game struct {
-	levels            []*level.Level
-	currentLevelIndex int
-	turnManager       turnManager
-	patty             *entities.BurgerPatty
+	levels              []*level.Level
+	currentLevelIndex   int
+	currentEndlessLevel int
+	turnManager         turnManager
+	patty               *entities.BurgerPatty
 
 	gameScreen *ebiten.Image
 	status     Status
@@ -131,7 +132,7 @@ func (g *Game) Update() error {
 	switch g.currentGameState {
 	case StateMenu:
 		return g.updateMenu()
-	case StatePlaying, StateRandom:
+	case StatePlaying, StateEndless:
 		return g.updatePlaying()
 	case StateIntro:
 		return g.updateIntro()
@@ -160,7 +161,7 @@ func (g *Game) handleGameStateChange() {
 	case StateMenu:
 		g.audios.menuMusicPlayer.Rewind()
 		g.audios.menuMusicPlayer.Play()
-	case StateIntro, StatePlaying, StateRandom:
+	case StateIntro, StatePlaying, StateEndless:
 		g.introDelayTimer = 10
 		g.audios.mainMusicPlayer.Rewind()
 		g.audios.mainMusicPlayer.Play()
@@ -366,8 +367,9 @@ func (g *Game) updateWinAnimation() {
 	g.animationManager.Update()
 
 	if !g.animationManager.isWinningPlaying() {
-		if g.currentGameState == StateRandom {
-			g.startRandomGame()
+		if g.currentGameState == StateEndless {
+			g.currentEndlessLevel++
+			g.startEndlessGame()
 		} else {
 			g.increaseLevel()
 			g.levelToTurn()
@@ -481,11 +483,10 @@ func (g *Game) initLevels() {
 	g.levelToTurn()
 }
 
-func (g *Game) startRandomGame() {
-	slog.Info("Starting new random game")
-	g.currentGameState = StateRandom
-	g.levels = []*level.Level{level.NewRandomLevel()}
-	g.currentLevelIndex = 0
+func (g *Game) startEndlessGame() {
+	slog.Info("Starting new endless game")
+	g.currentGameState = StateEndless
+	g.levels = []*level.Level{level.NewEndlessLevel(g.currentEndlessLevel)}
 	g.status = Playing
 	g.levelToTurn()
 }
@@ -586,7 +587,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.currentGameState {
 	case StateMenu:
 		g.drawMenu(screen)
-	case StatePlaying, StateRandom, StatePaused, StateIntro:
+	case StatePlaying, StateEndless, StatePaused, StateIntro:
 		g.drawPlaying(screen)
 		if g.currentGameState == StateIntro {
 			g.drawIntro(screen)

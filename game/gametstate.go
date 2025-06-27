@@ -5,7 +5,7 @@ type GameState int
 const (
 	StateMenu GameState = iota
 	StatePlaying
-	StateRandom
+	StateEndless
 	StateExiting
 	StatePaused
 	StateIntro

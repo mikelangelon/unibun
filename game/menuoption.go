@@ -36,9 +36,9 @@ func (g *Game) initMenu() {
 			},
 		},
 		{
-			Text: "Random",
+			Text: "Endless",
 			Action: func(game *Game) {
-				game.startRandomGame()
+				game.startEndlessGame()
 			},
 		},
 		{

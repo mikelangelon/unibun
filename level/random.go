@@ -1,6 +1,7 @@
 package level
 
 import (
+	"math"
 	"math/rand/v2"
 
 	"github.com/mikelangelon/unibun/config"
@@ -11,8 +12,20 @@ type wallShape struct {
 	width, height int
 }
 
-// NewRandomLevel generates a new level with random elements, as walls (wallShape).
-func NewRandomLevel() *Level {
+func getNumberEnemies(lvlIndex int) int {
+	min, maxRand := 2, 3
+	if lvlIndex >= 5 && lvlIndex < 10 {
+		min, maxRand = 3, 4
+	} else if lvlIndex >= 10 && lvlIndex < 15 {
+		min, maxRand = 4, 6
+	} else if lvlIndex >= 15 {
+		min, maxRand = 4, 8
+	}
+	return min + rand.IntN(maxRand)
+}
+
+// NewEndlessLevel generates a new level with random elements, as walls (wallShape).
+func NewEndlessLevel(lvlIndex int) *Level {
 	lvl := NewEmptyLevel()
 
 	// Clear existing entities
@@ -54,23 +67,58 @@ func NewRandomLevel() *Level {
 		spawnPoints = append(spawnPoints[:idx], spawnPoints[idx+1:]...)
 	}
 
+	var availablePlayerTypes []config.PlayerType
+	for _, char := range turnOrder {
+		if p, ok := char.(entities.Player); ok {
+			availablePlayerTypes = append(availablePlayerTypes, p.PlayerType)
+		}
+	}
+
 	// Place Enemies
-	numEnemies := 2 + rand.IntN(4) // random from 2 to 5
+	numEnemies := getNumberEnemies(lvlIndex)
 	for i := 0; i < numEnemies; i++ {
 		if len(spawnPoints) == 0 {
 			break
 		}
 		idx := rand.IntN(len(spawnPoints))
 		pos := spawnPoints[idx]
-		enemy := entities.NewEnemy(pos.X, pos.Y)
+
+		// max progression level is 20, from there, all the same.
+		roofLevel := math.Min(20.0, float64(lvlIndex))
+		progress := roofLevel / 20.0
+
+		/**
+		Distribute the 3 enemy types, leaving the path type outside because no idea how to randomize it properly
+		Enemy is the easiest, dash follower medium and follower the hardest.
+		from 0 to 100
+		- Enemy would be between 0 to 50
+		- DashFollower would be between Enemy value and 60
+		- Follower just the last threshold
+
+		*/
+
+		enemyThreshold := 70.0 - (50.0 * progress)
+		dashThreshold := 20 + enemyThreshold + (20.0 * progress)
+
+		var enemy entities.Enemier
+		r := rand.Float64() * 100
+
+		if len(availablePlayerTypes) == 0 || r < enemyThreshold {
+			enemy = entities.NewEnemy(pos.X, pos.Y)
+		} else {
+			targetType := availablePlayerTypes[rand.IntN(len(availablePlayerTypes))]
+			if r < dashThreshold {
+				minTurns := int(3.0 - 2.0*progress)
+				maxTurns := int(4.0 - 1.0*progress)
+				turnsToDash := rand.IntN(maxTurns-minTurns+1) + minTurns
+				enemy = entities.NewDashingFollowerEnemy(pos.X, pos.Y, targetType, turnsToDash)
+			} else {
+				enemy = entities.NewFollowerEnemy(pos.X, pos.Y, targetType)
+			}
+		}
 		turnOrder = append(turnOrder, enemy)
 		spawnPoints = append(spawnPoints[:idx], spawnPoints[idx+1:]...)
 	}
-
-	// Shuffle turn order for more randomness
-	rand.Shuffle(len(turnOrder), func(i, j int) {
-		turnOrder[i], turnOrder[j] = turnOrder[j], turnOrder[i]
-	})
 	lvl.TurnOrderPattern = turnOrder
 
 	return lvl
