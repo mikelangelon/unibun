@@ -50,40 +50,10 @@ type Game struct {
 	animationManager *animationManager
 }
 
-type turnManager struct {
-	currentTurn      int
-	turnOrderDisplay []character
-}
-
 type character interface {
 	Draw(screen *ebiten.Image)
 	Update(level entities.Level) bool
 	Reset()
-}
-
-func (t turnManager) getPlayerType(playerType config.PlayerType) *entities.Player {
-	for _, v := range t.turnOrderDisplay {
-		switch item := v.(type) {
-		case *entities.Player:
-			if item.PlayerType == playerType {
-				return item
-			}
-		}
-	}
-	return nil
-}
-
-func (t turnManager) getPlayerTypes(playerType config.PlayerType) []*entities.Player {
-	var types []*entities.Player
-	for _, v := range t.turnOrderDisplay {
-		switch item := v.(type) {
-		case *entities.Player:
-			if item.PlayerType == playerType {
-				types = append(types, item)
-			}
-		}
-	}
-	return types
 }
 
 func NewGame() *Game {
@@ -404,27 +374,27 @@ func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
 		g.enemyTurnDelayTimer--
 		return
 	}
-
 	if fe, ok := enemy.(*entities.FollowerEnemy); ok {
-		targetPlayer := g.turnManager.getPlayerType(fe.GetTargetPlayerType())
-		if targetPlayer != nil {
-			fe.SetTarget(targetPlayer.GridX, targetPlayer.GridY)
-		}
+		g.setFollowerTarget(fe)
 	} else if dfe, ok := enemy.(*entities.DashingFollowerEnemy); ok {
-		targetPlayer := g.turnManager.getPlayerType(dfe.GetTargetPlayerType())
-		gridX, gridY := -1, -1
-		if targetPlayer != nil {
-			gridX, gridY = targetPlayer.GridX, targetPlayer.GridY
-		}
-		dfe.SetTarget(gridX, gridY)
+		g.setFollowerTarget(&dfe.FollowerEnemy)
 	}
 
 	g.checkCollisionToPlayer(enemy)
-	enemyMoved := enemy.Update(g.currentLevel())
-	if enemyMoved {
+	turnConsumed := enemy.Update(g.currentLevel())
+	if turnConsumed {
 		g.checkCollisionToPlayer(enemy)
 		g.advanceTurn()
 	}
+}
+
+func (g *Game) setFollowerTarget(fe *entities.FollowerEnemy) {
+	targetPlayer := g.turnManager.getPlayerType(fe.GetTargetPlayerType())
+	gridX, gridY := -1, -1
+	if targetPlayer != nil {
+		gridX, gridY = targetPlayer.GridX, targetPlayer.GridY
+	}
+	fe.SetTarget(gridX, gridY)
 }
 
 func (g *Game) checkWinCondition(actor *entities.Player) {
@@ -455,7 +425,7 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 }
 
 func (g *Game) initLevels() {
-	g.levels = []*level.Level{level.UseOtherObject(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
+	g.levels = []*level.Level{level.FourSnakesReturn(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
 	g.currentLevelIndex = 0
 	g.status = Playing
 	g.levelToTurn()
@@ -707,8 +677,7 @@ func (g *Game) buildTurnOrderDisplay() {
 		newActor.IsActiveTurn = true
 	}
 
-	switch g.turnManager.turnOrderDisplay[0].(type) {
-	case *entities.PathEnemy, *entities.Enemy:
+	if _, ok := g.turnManager.turnOrderDisplay[0].(entities.Enemier); ok {
 		g.enemyTurnDelayTimer = config.EnemyTurnDelayDuration
 	}
 }
@@ -744,11 +713,13 @@ func (g *Game) performMerge() {
 	mergedImage.DrawImage(topBunPlayer.Image, op)
 
 	mergedPlayer := entities.Player{
-		GridX:      g.patty.GridX,
-		GridY:      g.patty.GridY,
-		PlayerType: config.MergedBurgerType,
-		Speed:      1,
-		Image:      mergedImage,
+		GridX:               g.patty.GridX,
+		GridY:               g.patty.GridY,
+		PlayerType:          config.MergedBurgerType,
+		Speed:               1,
+		Image:               mergedImage,
+		CanDash:             topBunPlayer.CanDash || bottomBunPlayer.CanDash,
+		CanWalkThroughWalls: topBunPlayer.CanWalkThroughWalls || bottomBunPlayer.CanWalkThroughWalls,
 	}
 	var charactersWithoutMergedOnes []character
 	for _, v := range g.turnManager.turnOrderDisplay {
@@ -820,10 +791,6 @@ func (g *Game) Reset() {
 		g.patty.Reset()
 	}
 
-	for _, char := range g.turnManager.turnOrderDisplay {
-		char.Reset()
-	}
-
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {
 		switch actualActor := v.(type) {
@@ -838,6 +805,9 @@ func (g *Game) Reset() {
 		case entities.Player:
 			characters = append(characters, &actualActor)
 		}
+	}
+	for _, char := range characters {
+		char.Reset()
 	}
 	g.turnManager.turnOrderDisplay = characters
 

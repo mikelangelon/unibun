@@ -1,9 +1,10 @@
 package entities
 
 import (
-	"github.com/mikelangelon/unibun/common"
 	"image"
 	"log/slog"
+
+	"github.com/mikelangelon/unibun/common"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/assets"
@@ -62,7 +63,7 @@ func (pe *PathEnemy) Draw(screen *ebiten.Image) {
 
 func (pe *PathEnemy) Update(_ Level) bool {
 	if len(pe.path) <= 1 { // If no path or a single point path, don't move.
-		return false
+		return true
 	}
 
 	// Calculate the next potential index in the path
@@ -87,7 +88,7 @@ func (pe *PathEnemy) Update(_ Level) bool {
 	targetPoint := pe.path[pe.currentPathIndex]
 
 	if pe.GridX == targetPoint.X && pe.GridY == targetPoint.Y {
-		return false // Didn't move
+		return true // Didn't move, enemy wasted its turn
 	}
 
 	pe.GridX = targetPoint.X

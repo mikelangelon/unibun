@@ -1,8 +1,13 @@
 package entities
 
 import (
-	"github.com/mikelangelon/unibun/common"
+	"fmt"
+	"log/slog"
 	"math"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/mikelangelon/unibun/common"
 
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/config"
@@ -39,6 +44,17 @@ func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, t
 	}
 }
 
+func (dfe *DashingFollowerEnemy) Draw(screen *ebiten.Image) {
+	dfe.FollowerEnemy.Draw(screen)
+
+	if dfe.dashCounter > 0 {
+		s := fmt.Sprintf("%d", dfe.dashCounter)
+		x := dfe.gridX*config.TileSize + config.TileSize - 10
+		y := dfe.gridY*config.TileSize + 2
+		ebitenutil.DebugPrintAt(screen, s, x, y-20)
+	}
+}
+
 func (dfe *DashingFollowerEnemy) Update(level Level) bool {
 	if dfe.dashState.IsActive() {
 		newX, newY, _, finished := dfe.dashState.Update(dfe.gridX, dfe.gridY, level, false)
@@ -67,6 +83,7 @@ func (dfe *DashingFollowerEnemy) Update(level Level) bool {
 
 			// Going to dash
 			if dx != 0 || dy != 0 {
+				slog.Info("DashingFollowerEnemy trying to dash", "from_x", dfe.gridX, "from_y", dfe.gridY, "dx", dx, "dy", dy)
 				if dfe.dashState.Start(dfe.gridX, dfe.gridY, dx, dy, 5, level, false) {
 					dfe.dashCounter = dfe.turnsToDash
 
@@ -78,7 +95,10 @@ func (dfe *DashingFollowerEnemy) Update(level Level) bool {
 			}
 		}
 
+		// If code reaches here --> it means the dash couldn't even start due to obstacle)
+		// Reset count and continue turn TODO: Try other possibilities
 		dfe.dashCounter = dfe.turnsToDash
+		return true
 	}
 
 	return dfe.FollowerEnemy.Update(level)

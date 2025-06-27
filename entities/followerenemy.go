@@ -1,8 +1,9 @@
 package entities
 
 import (
-	"github.com/mikelangelon/unibun/common"
 	"math"
+
+	"github.com/mikelangelon/unibun/common"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/assets"
@@ -35,6 +36,18 @@ func (fe *FollowerEnemy) Draw(screen *ebiten.Image) {
 	pixelX := float64(fe.gridX * config.TileSize)
 	pixelY := float64(fe.gridY * config.TileSize)
 	op.GeoM.Translate(pixelX, pixelY)
+
+	// Coloring based on target
+	switch fe.targetPlayerType {
+	case config.TopBun:
+		op.ColorScale.Scale(1, 0.5, 0.5, 1)
+	case config.BottomBun:
+		op.ColorScale.Scale(0.5, 0.5, 1, 1)
+	case config.Lettuce:
+		op.ColorScale.Scale(0.5, 1, 0.5, 1)
+	case config.Cheese:
+		op.ColorScale.Scale(1, 1, 0.5, 1)
+	}
 	screen.DrawImage(fe.image, op)
 }
 
@@ -50,7 +63,6 @@ func (fe *FollowerEnemy) Update(level Level) bool {
 		return true
 	}
 
-	moved := false
 	currentX, currentY := fe.gridX, fe.gridY
 
 	// Try to reduce distance to the target
@@ -58,17 +70,15 @@ func (fe *FollowerEnemy) Update(level Level) bool {
 		nextX := currentX + int(math.Copysign(1, float64(fe.targetX-currentX)))
 		if level.IsWalkable(nextX, currentY) {
 			fe.gridX = nextX
-			moved = true
 		}
 	} else if fe.targetY != currentY {
 		nextY := currentY + int(math.Copysign(1, float64(fe.targetY-currentY)))
 		if level.IsWalkable(currentX, nextY) {
 			fe.gridY = nextY
-			moved = true
 		}
 	}
 
-	return moved
+	return true
 }
 
 func (fe *FollowerEnemy) Collision(player *Player) bool {

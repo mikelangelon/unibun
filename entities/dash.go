@@ -2,6 +2,7 @@ package entities
 
 import (
 	"image"
+	"log/slog"
 
 	"github.com/mikelangelon/unibun/config"
 )
@@ -51,6 +52,7 @@ func (ds *DashState) Start(startX, startY, dx, dy int, speed int, level Level, c
 	}
 
 	ds.path = tempPath
+	slog.Info("Debug dash path calculated", "path", tempPath)
 	ds.isActive = true
 	return true
 }
