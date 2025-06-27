@@ -94,12 +94,6 @@ func NewGame() *Game {
 		log.Fatal(err)
 	}
 	g.audios = a
-	// init active turn
-	if len(g.turnManager.turnOrderDisplay) > 0 {
-		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
-			p.IsActiveTurn = true
-		}
-	}
 	img, _, err := image.Decode(bytes.NewReader(assets.MenuBackground))
 	if err != nil {
 		log.Fatal(err)
@@ -113,7 +107,7 @@ func NewGame() *Game {
 	g.previousGameState = -1
 	g.resetTimer = 0
 	g.animationManager = newAnimationManager()
-	//g.winAnimation = &WinAnimation{}
+
 	return &g
 }
 
@@ -242,6 +236,8 @@ func (g *Game) updatePlaying() error {
 		return nil
 	}
 
+	g.updateEffects()
+
 	if g.needsRestart {
 		g.resetTimer--
 		if g.resetTimer <= 0 {
@@ -261,7 +257,7 @@ func (g *Game) updatePlaying() error {
 
 		// If player is in the middle of a dash, continue it.
 		if actor.IsDashing() {
-			actor.Update(g.currentLevel()) // Move one step
+			actor.Update(g.currentLevel())
 			g.checkCollisionToPlayerOnPlayerTurn(actor)
 			if g.needsRestart {
 				return nil
@@ -269,8 +265,6 @@ func (g *Game) updatePlaying() error {
 			break
 		}
 
-		// If not dashing, check for new input.
-		// The original actor.Update() call was here. It's harmless for non-dashing players.
 		actor.Update(g.currentLevel())
 
 		// TODO Too many if statements. Try to fix
@@ -342,6 +336,10 @@ func (g *Game) updatePlaying() error {
 	return nil
 }
 
+func (g *Game) updateEffects() {
+	g.animationManager.Update()
+}
+
 func (g *Game) isTileOccupiedByCharacter(x, y int) bool {
 	for _, char := range g.turnManager.turnOrderDisplay {
 		switch entity := char.(type) {
@@ -395,6 +393,10 @@ func (g *Game) drawMergeAnimation(screen *ebiten.Image) {
 
 func (g *Game) drawWinAnimation(screen *ebiten.Image) {
 	g.animationManager.drawWinningAnimation(screen)
+}
+
+func (g *Game) drawEffects(screen *ebiten.Image) {
+	g.animationManager.drawEffects(screen)
 }
 
 func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
@@ -623,6 +625,9 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 	if g.animationManager.isWinningPlaying() {
 		g.drawWinAnimation(g.gameScreen)
 	}
+
+	g.drawEffects(g.gameScreen)
+
 	// Draw winning message
 	if g.status == Win {
 		drawWinning(g.gameScreen)
@@ -873,7 +878,7 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 				isBun := player.PlayerType == config.TopBun || player.PlayerType == config.BottomBun
 				if isBun && player.IsDashing() {
 					g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay[:i], g.turnManager.turnOrderDisplay[i+1:]...)
-					// TODO Show some confetti?
+					g.animationManager.playKillEffect(player.GridX, player.GridY)
 				} else if !g.needsRestart {
 					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
 					g.resetTimer = shakeDefaultDuration + 10
@@ -899,6 +904,12 @@ func (g *Game) levelToTurn() {
 		}
 	}
 	g.turnManager.turnOrderDisplay = characters
+	// init active turn
+	if len(g.turnManager.turnOrderDisplay) > 0 {
+		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
+			p.IsActiveTurn = true
+		}
+	}
 }
 
 func merge2Images(img1, img2 *ebiten.Image) *ebiten.Image {

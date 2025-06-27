@@ -35,18 +35,24 @@ func (c *Confetti) Update() {
 	c = &confettiAlive
 }
 
+func (c *Confetti) Draw(screen *ebiten.Image) {
+	for _, p := range *c {
+		ebitenutil.DrawRect(screen, p.x, p.y, 2, 2, p.color)
+	}
+}
+
 type MergeAnimation struct {
 	IsActive          bool
-	Timer             int
-	Duration          int
+	timer             int
+	duration          int
 	topBunStartPos    image.Point
 	bottomBunStartPos image.Point
 	pattyPos          image.Point
-	Confetti          []*ConfettiParticle
+	Confetti          Confetti
 }
 
 func (m *MergeAnimation) Update() {
-	m.Timer--
+	m.timer--
 
 	var confettiAlive []*ConfettiParticle
 	for _, c := range m.Confetti {
@@ -59,10 +65,13 @@ func (m *MergeAnimation) Update() {
 		}
 	}
 	m.Confetti = confettiAlive
+	if m.timer <= 0 {
+		m.Deactivate()
+	}
 }
 
 func (m *MergeAnimation) DrawMergeAnimation(screen *ebiten.Image, patty *BurgerPatty, topBun, bottomBun *Player) {
-	progress := 1.0 - float64(m.Timer)/float64(m.Duration)
+	progress := 1.0 - float64(m.timer)/float64(m.duration)
 	if progress > 1.0 {
 		progress = 1.0
 	}
@@ -86,15 +95,19 @@ func (m *MergeAnimation) DrawMergeAnimation(screen *ebiten.Image, patty *BurgerP
 }
 
 func (m *MergeAnimation) Draw(screen *ebiten.Image) {
-	for _, p := range m.Confetti {
-		ebitenutil.DrawRect(screen, p.x, p.y, 2, 2, p.color)
-	}
+	m.Confetti.Draw(screen)
 }
 
-func (m *MergeAnimation) Activate(patty *BurgerPatty, topBun, bottomBun *Player) {
+func (m *MergeAnimation) Activate(duration int) {
 	m.IsActive = true
-	m.Duration = 60
-	m.Timer = m.Duration
+	m.duration = 60
+	m.timer = m.duration
+}
+func (m *MergeAnimation) Deactivate() {
+	m.IsActive = false
+}
+func (m *MergeAnimation) ActivateMerge(patty *BurgerPatty, topBun, bottomBun *Player) {
+	m.Activate(60)
 
 	m.topBunStartPos = image.Point{X: topBun.GridX, Y: topBun.GridY}
 	m.bottomBunStartPos = image.Point{X: bottomBun.GridX, Y: bottomBun.GridY}
