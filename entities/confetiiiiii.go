@@ -100,7 +100,7 @@ func (m *MergeAnimation) Draw(screen *ebiten.Image) {
 
 func (m *MergeAnimation) Activate(duration int) {
 	m.IsActive = true
-	m.duration = 60
+	m.duration = duration
 	m.timer = m.duration
 }
 func (m *MergeAnimation) Deactivate() {
@@ -117,6 +117,13 @@ func (m *MergeAnimation) ActivateMerge(patty *BurgerPatty, topBun, bottomBun *Pl
 }
 
 func CreateConfetti(gridX, gridY int) []*ConfettiParticle {
+	return createConfettiParticles(gridX, gridY, generateColor)
+}
+
+func CreateBlood(gridX, gridY int) []*ConfettiParticle {
+	return createConfettiParticles(gridX, gridY, generateBlood)
+}
+func createConfettiParticles(gridX, gridY int, generateColor func() color.RGBA) []*ConfettiParticle {
 	particles := make([]*ConfettiParticle, 100)
 	centerX := float64(gridX*config.TileSize + config.TileSize/2)
 	centerY := float64(gridY*config.TileSize + config.TileSize/2)
@@ -130,8 +137,16 @@ func CreateConfetti(gridX, gridY int) []*ConfettiParticle {
 			vx:    math.Cos(angle) * speed,
 			vy:    math.Sin(angle) * speed,
 			life:  30 + rand.Intn(30),
-			color: color.RGBA{R: uint8(rand.Intn(256)), G: uint8(rand.Intn(256)), B: uint8(rand.Intn(256)), A: 0xff},
+			color: generateColor(),
 		}
 	}
 	return particles
+}
+
+func generateColor() color.RGBA {
+	return color.RGBA{R: uint8(rand.Intn(256)), G: uint8(rand.Intn(256)), B: uint8(rand.Intn(256)), A: 0xff}
+}
+
+func generateBlood() color.RGBA {
+	return color.RGBA{R: uint8(rand.Intn(256)), G: 0, B: 0, A: 0xff}
 }

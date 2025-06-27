@@ -44,7 +44,7 @@ func (a *animationManager) playWinningAnimation(x, y int) {
 }
 
 func (a *animationManager) playKillEffect(x, y int) {
-	a.effects = append(a.effects, entities.CreateConfetti(x, y))
+	a.effects = append(a.effects, entities.CreateBlood(x, y))
 }
 
 func (a *animationManager) drawMergeAnimation(screen *ebiten.Image, patty *entities.BurgerPatty, topBun, bottomBun *entities.Player) {
