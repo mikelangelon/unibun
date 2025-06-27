@@ -24,7 +24,7 @@ func NewFollowerEnemy(startX, startY int, targetType config.PlayerType) *Followe
 		gridY:            startY,
 		initialGridX:     startX,
 		initialGridY:     startY,
-		image:            common.GetImage(assets.Pidgeon),
+		image:            imageByTarget(targetType, assets.Snake),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,
@@ -36,18 +36,6 @@ func (fe *FollowerEnemy) Draw(screen *ebiten.Image) {
 	pixelX := float64(fe.gridX * config.TileSize)
 	pixelY := float64(fe.gridY * config.TileSize)
 	op.GeoM.Translate(pixelX, pixelY)
-
-	// Coloring based on target
-	switch fe.targetPlayerType {
-	case config.TopBun:
-		op.ColorScale.Scale(1, 0.5, 0.5, 1)
-	case config.BottomBun:
-		op.ColorScale.Scale(0.5, 0.5, 1, 1)
-	case config.Lettuce:
-		op.ColorScale.Scale(0.5, 1, 0.5, 1)
-	case config.Cheese:
-		op.ColorScale.Scale(1, 1, 0.5, 1)
-	}
 	screen.DrawImage(fe.image, op)
 }
 
@@ -98,4 +86,22 @@ func (fe *FollowerEnemy) Reset() {
 
 func (fe *FollowerEnemy) GetTargetPlayerType() config.PlayerType {
 	return fe.targetPlayerType
+}
+
+func imageByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
+	op := &ebiten.DrawImageOptions{}
+	// Coloring based on target
+	switch targetType {
+	case config.TopBun:
+		op.ColorScale.Scale(1, 0.5, 0.5, 1)
+	case config.BottomBun:
+		op.ColorScale.Scale(0.5, 0.5, 1, 1)
+	case config.Lettuce:
+		op.ColorScale.Scale(0.1, 1, 0.1, 1)
+	case config.Cheese:
+		op.ColorScale.Scale(1, 1, 0.1, 1)
+	}
+	coloredImage := ebiten.NewImage(config.TileSize, config.TileSize)
+	coloredImage.DrawImage(common.GetImage(b), op)
+	return coloredImage
 }

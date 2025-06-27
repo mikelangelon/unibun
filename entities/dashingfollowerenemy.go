@@ -7,8 +7,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/mikelangelon/unibun/common"
-
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/config"
 )
@@ -24,13 +22,12 @@ type DashingFollowerEnemy struct {
 }
 
 func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, turnsToDash int) *DashingFollowerEnemy {
-	// TODO Use a different image
 	fe := FollowerEnemy{
 		gridX:            startX,
 		gridY:            startY,
 		initialGridX:     startX,
 		initialGridY:     startY,
-		image:            common.GetImage(assets.Snake),
+		image:            imageByTarget(targetType, assets.Snake),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,
