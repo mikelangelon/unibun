@@ -76,12 +76,13 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 
 func (p *Player) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
+	if p.IsDashing() {
+		op.ColorScale.Scale(1.5, 1.8, 0.5, 0.8)
+	}
 	if p.IsActiveTurn {
 		brightness := 1.25 + 0.25*math.Sin(p.pulseOffset/15.0)
-		var cm ebiten.ColorScale
-		cm.Scale(float32(brightness), float32(brightness), float32(brightness), 1.0)
-		op.ColorScale = cm
-		p.pulseOffset++ // Increment offset for brightty animation
+		op.ColorScale.Scale(float32(brightness), float32(brightness), float32(brightness), 1.0)
+		p.pulseOffset++
 	}
 	pixelX := float64(p.GridX * config.TileSize)
 	pixelY := float64(p.GridY * config.TileSize)
