@@ -32,7 +32,6 @@ type Game struct {
 	shake        *Shake
 	// delays
 	enemyTurnDelayTimer int
-	nextLevelDelayTimer int
 
 	// Menu related fields
 	currentGameState        GameState
@@ -48,7 +47,7 @@ type Game struct {
 	previousGameState GameState // To change music when GameState changes.
 	stateBeforePause  GameState
 
-	mergeAnimation *mergeAnimation
+	animationManager *animationManager
 }
 
 type turnManager struct {
@@ -113,7 +112,8 @@ func NewGame() *Game {
 	g.currentGameState = StateMenu
 	g.previousGameState = -1
 	g.resetTimer = 0
-	g.mergeAnimation = &mergeAnimation{}
+	g.animationManager = newAnimationManager()
+	//g.winAnimation = &WinAnimation{}
 	return &g
 }
 
@@ -229,8 +229,16 @@ func (g *Game) updatePlaying() error {
 		g.shake.Update()
 	}
 
-	if g.mergeAnimation.isActive {
+	if g.animationManager.isMergeAnimationPlaying() {
 		g.updateMergeAnimation()
+		return nil
+	}
+	if g.animationManager.isMergeAnimationPlaying() {
+		g.updateMergeAnimation()
+		return nil
+	}
+	if g.animationManager.isWinningPlaying() {
+		g.updateWinAnimation()
 		return nil
 	}
 
@@ -311,18 +319,35 @@ func (g *Game) updatePlaying() error {
 					} else {
 						g.checkWinCondition(g.turnManager.getPlayerType(config.MergedBurgerType))
 					}
-					if !g.mergeAnimation.isActive {
+					if !g.animationManager.blockingAnimation() {
 						g.advanceTurn()
 					}
 				}
 			}
 		}
 	}
-	if g.status == Win {
-		if g.nextLevelDelayTimer > 0 {
-			g.nextLevelDelayTimer--
-			return nil
-		}
+	return nil
+}
+
+func (g *Game) updateMergeAnimation() {
+	if !g.animationManager.isMergeAnimationPlaying() {
+		return
+	}
+	g.animationManager.Update()
+
+	if !g.animationManager.isMergeAnimationPlaying() {
+		g.performMerge()
+		g.advanceTurn()
+	}
+}
+
+func (g *Game) updateWinAnimation() {
+	if !g.animationManager.isWinningPlaying() {
+		return
+	}
+	g.animationManager.Update()
+
+	if !g.animationManager.isWinningPlaying() {
 		if g.currentGameState == StateRandom {
 			g.startRandomGame()
 		} else {
@@ -330,27 +355,17 @@ func (g *Game) updatePlaying() error {
 			g.levelToTurn()
 		}
 	}
-	return nil
-}
-
-func (g *Game) updateMergeAnimation() {
-	if !g.mergeAnimation.isActive {
-		return
-	}
-	g.mergeAnimation.Update()
-
-	if g.mergeAnimation.timer <= 0 {
-		g.mergeAnimation.isActive = false
-		g.performMerge()
-		g.advanceTurn()
-	}
 }
 
 func (g *Game) drawMergeAnimation(screen *ebiten.Image) {
 	topBun := g.turnManager.getPlayerType(config.TopBun)
 	bottomBun := g.turnManager.getPlayerType(config.BottomBun)
 	patty := g.patty
-	g.mergeAnimation.draw(screen, patty, topBun, bottomBun)
+	g.animationManager.drawMergeAnimation(screen, patty, topBun, bottomBun)
+}
+
+func (g *Game) drawWinAnimation(screen *ebiten.Image) {
+	g.animationManager.drawWinningAnimation(screen)
 }
 
 func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
@@ -382,15 +397,22 @@ func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
 }
 
 func (g *Game) checkWinCondition(actor *entities.Player) {
-	if actor == nil || actor.PlayerType != config.MergedBurgerType {
+	if g.animationManager.isWinningPlaying() || actor == nil || actor.PlayerType != config.MergedBurgerType {
 		return
 	}
 	for _, v := range g.currentLevel().Winning {
 		if actor.GridX == v.X && actor.GridY == v.Y {
-			g.status = Win
-			g.nextLevelDelayTimer = config.NextLevelDelayDuration
-			log.Println("YOU WIN! Merged burger reached the win tile.")
+			g.startWinAnimation(actor.GridX, actor.GridY)
+			break
 		}
+	}
+}
+
+func (g *Game) startWinAnimation(gridX, gridY int) {
+	g.animationManager.playWinningAnimation(gridX, gridY)
+	if !g.animationManager.isWinningPlaying() {
+		g.status = Win
+		log.Println("YOU WIN! Merged burger reached the win tile.")
 	}
 }
 
@@ -550,7 +572,7 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 	g.currentLevel().Draw(g.gameScreen)
 	for _, character := range g.turnManager.turnOrderDisplay {
 		if character != nil {
-			if g.mergeAnimation.isActive {
+			if g.animationManager.isMergeAnimationPlaying() {
 				if p, ok := character.(*entities.Player); ok {
 					if p.PlayerType == config.TopBun || p.PlayerType == config.BottomBun {
 						continue
@@ -561,13 +583,16 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 		}
 	}
 	if g.patty != nil {
-		if !g.mergeAnimation.isActive {
+		if !g.animationManager.blockingAnimation() {
 			g.patty.Draw(g.gameScreen)
 		}
 	}
 
-	if g.mergeAnimation.isActive {
+	if g.animationManager.isMergeAnimationPlaying() {
 		g.drawMergeAnimation(g.gameScreen)
+	}
+	if g.animationManager.isWinningPlaying() {
+		g.drawWinAnimation(g.gameScreen)
 	}
 	// Draw winning message
 	if g.status == Win {
@@ -704,13 +729,13 @@ func (g *Game) performMerge() {
 }
 
 func (g *Game) attemptMergeBurger() {
-	if g.mergeAnimation.isActive || !g.canBeMerged() {
+	if g.animationManager.isMergeAnimationPlaying() || !g.canBeMerged() {
 		return
 	}
 	topBun := g.turnManager.getPlayerType(config.TopBun)
 	bottomBun := g.turnManager.getPlayerType(config.BottomBun)
 	// Start animation
-	g.mergeAnimation.activate(g.patty, topBun, bottomBun)
+	g.animationManager.playMergeAnimation(g.patty, topBun, bottomBun)
 }
 
 func (g *Game) canBeMerged() bool {

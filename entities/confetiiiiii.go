@@ -1,39 +1,55 @@
-package game
+package entities
 
 import (
-	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/mikelangelon/unibun/config"
-	"github.com/mikelangelon/unibun/entities"
 	"image"
 	"image/color"
 	"math"
 	"math/rand"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/mikelangelon/unibun/config"
 )
 
 const gravity = 0.05
 
-type confettiParticle struct {
+type ConfettiParticle struct {
 	x, y, vx, vy float64
 	color        color.Color
 	life         int
 }
 
-type mergeAnimation struct {
-	isActive          bool
-	timer             int
-	duration          int
+type Confetti []*ConfettiParticle
+
+func (c *Confetti) Update() {
+	var confettiAlive Confetti
+	for _, cp := range *c {
+		cp.x += cp.vx
+		cp.y += cp.vy
+		cp.vy += gravity
+		cp.life--
+		if cp.life > 0 {
+			confettiAlive = append(confettiAlive, cp)
+		}
+	}
+	c = &confettiAlive
+}
+
+type MergeAnimation struct {
+	IsActive          bool
+	Timer             int
+	Duration          int
 	topBunStartPos    image.Point
 	bottomBunStartPos image.Point
 	pattyPos          image.Point
-	confetti          []*confettiParticle
+	Confetti          []*ConfettiParticle
 }
 
-func (m *mergeAnimation) Update() {
-	m.timer--
+func (m *MergeAnimation) Update() {
+	m.Timer--
 
-	var confettiAlive []*confettiParticle
-	for _, c := range m.confetti {
+	var confettiAlive []*ConfettiParticle
+	for _, c := range m.Confetti {
 		c.x += c.vx
 		c.y += c.vy
 		c.vy += gravity
@@ -42,11 +58,11 @@ func (m *mergeAnimation) Update() {
 			confettiAlive = append(confettiAlive, c)
 		}
 	}
-	m.confetti = confettiAlive
+	m.Confetti = confettiAlive
 }
 
-func (m *mergeAnimation) draw(screen *ebiten.Image, patty *entities.BurgerPatty, topBun, bottomBun *entities.Player) {
-	progress := 1.0 - float64(m.timer)/float64(m.duration)
+func (m *MergeAnimation) DrawMergeAnimation(screen *ebiten.Image, patty *BurgerPatty, topBun, bottomBun *Player) {
+	progress := 1.0 - float64(m.Timer)/float64(m.Duration)
 	if progress > 1.0 {
 		progress = 1.0
 	}
@@ -66,32 +82,36 @@ func (m *mergeAnimation) draw(screen *ebiten.Image, patty *entities.BurgerPatty,
 	opBottom.GeoM.Translate(bottomBunPixelX, bottomBunPixelY)
 	screen.DrawImage(bottomBun.Image, opBottom)
 
-	for _, p := range m.confetti {
+	m.Draw(screen)
+}
+
+func (m *MergeAnimation) Draw(screen *ebiten.Image) {
+	for _, p := range m.Confetti {
 		ebitenutil.DrawRect(screen, p.x, p.y, 2, 2, p.color)
 	}
 }
 
-func (m *mergeAnimation) activate(patty *entities.BurgerPatty, topBun, bottomBun *entities.Player) {
-	m.isActive = true
-	m.duration = 60
-	m.timer = m.duration
+func (m *MergeAnimation) Activate(patty *BurgerPatty, topBun, bottomBun *Player) {
+	m.IsActive = true
+	m.Duration = 60
+	m.Timer = m.Duration
 
 	m.topBunStartPos = image.Point{X: topBun.GridX, Y: topBun.GridY}
 	m.bottomBunStartPos = image.Point{X: bottomBun.GridX, Y: bottomBun.GridY}
 	m.pattyPos = image.Point{X: patty.GridX, Y: patty.GridY}
 
-	m.confetti = createConfetti(patty.GridX, patty.GridY)
+	m.Confetti = CreateConfetti(patty.GridX, patty.GridY)
 }
 
-func createConfetti(gridX, gridY int) []*confettiParticle {
-	particles := make([]*confettiParticle, 100)
+func CreateConfetti(gridX, gridY int) []*ConfettiParticle {
+	particles := make([]*ConfettiParticle, 100)
 	centerX := float64(gridX*config.TileSize + config.TileSize/2)
 	centerY := float64(gridY*config.TileSize + config.TileSize/2)
 
 	for i := range particles {
 		angle := rand.Float64() * 2 * math.Pi
 		speed := 2 + rand.Float64()*2
-		particles[i] = &confettiParticle{
+		particles[i] = &ConfettiParticle{
 			x:     centerX,
 			y:     centerY,
 			vx:    math.Cos(angle) * speed,
