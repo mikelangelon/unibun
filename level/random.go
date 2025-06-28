@@ -27,6 +27,7 @@ func getNumberEnemies(lvlIndex int) int {
 // NewEndlessLevel generates a new level with random elements, as walls (wallShape).
 func NewEndlessLevel(lvlIndex int) *Level {
 	lvl := NewEmptyLevel()
+	lvl.tilesPatterns = randomTilePattern()
 
 	// Clear existing entities
 	lvl.TurnOrderPattern = []interface{}{}

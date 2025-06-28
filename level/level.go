@@ -125,8 +125,8 @@ func (l *Level) IsWalkable(gridX, gridY int) bool {
 }
 
 type tilesPatterns struct {
-	colorScaleOdd   func(op *ebiten.DrawImageOptions)
-	colorScale2Even func(op *ebiten.DrawImageOptions)
+	colorScaleOdd  func(op *ebiten.DrawImageOptions)
+	colorScaleEven func(op *ebiten.DrawImageOptions)
 }
 
 func tilePattern(rowIndex, columnIndex int, tilesPatterns tilesPatterns) *ebiten.DrawImageOptions {
@@ -134,9 +134,17 @@ func tilePattern(rowIndex, columnIndex int, tilesPatterns tilesPatterns) *ebiten
 	if (rowIndex+columnIndex)%2 == 0 {
 		tilesPatterns.colorScaleOdd(op)
 	} else {
-		tilesPatterns.colorScale2Even(op)
+		tilesPatterns.colorScaleEven(op)
 	}
 	return op
+}
+
+func randomTilePattern() tilesPatterns {
+	var allFuncs = []func(op *ebiten.DrawImageOptions){tileA, tileB, tileC, tileD, tileE, tileZ, tileF, tileG, tileH, tileGreen2, tileGreen}
+	return tilesPatterns{
+		colorScaleOdd:  allFuncs[rand.IntN(len(allFuncs))],
+		colorScaleEven: allFuncs[rand.IntN(len(allFuncs))],
+	}
 }
 
 // TODO: Giving up naming properly anything. Rename this

@@ -1,21 +1,13 @@
 package game
 
 import (
-	"image"
-	"image/color"
-	"log"
-	"log/slog"
-	"os"
-	"strings"
-
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/inpututil"
-
 	"github.com/hajimehoshi/ebiten/v2"
-
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 	"github.com/mikelangelon/unibun/level"
+	"image"
+	"log"
+	"log/slog"
 )
 
 type Game struct {
@@ -113,32 +105,6 @@ func (g *Game) initPauseMenu() {
 	}
 	g.selectedPauseMenuOption = 0
 }
-func (g *Game) Update() error {
-	if g.currentGameState != g.previousGameState {
-		g.handleGameStateChange()
-		g.previousGameState = g.currentGameState
-	}
-
-	switch g.currentGameState {
-	case StateMenu:
-		return g.menu.updateMenu(g)
-	case StatePlaying, StateEndless:
-		return g.updatePlaying()
-	case StateLevelSelect:
-		return g.levelManager.Update()
-	case StateIntro:
-		return g.updateIntro()
-	case StateTutorial:
-		return g.updateTutorial()
-	case StatePaused:
-		return g.updatePaused()
-	case StateGameComplete:
-		return g.updateGameComplete()
-	case StateExiting:
-		os.Exit(0)
-	}
-	return nil
-}
 
 func (g *Game) handleGameStateChange() {
 	if g.currentGameState == StatePaused {
@@ -167,167 +133,6 @@ func (g *Game) handleGameStateChange() {
 	}
 }
 
-func (g *Game) updateTutorial() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		g.currentGameState = StateMenu
-	}
-	return nil
-}
-
-func (g *Game) updateGameComplete() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		g.currentGameState = StateMenu
-	}
-	return nil
-}
-
-func (g *Game) updatePaused() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		g.selectedPauseMenuOption--
-		if g.selectedPauseMenuOption < 0 {
-			g.selectedPauseMenuOption = len(g.pauseMenuOptions) - 1
-		}
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		g.selectedPauseMenuOption++
-		if g.selectedPauseMenuOption >= len(g.pauseMenuOptions) {
-			g.selectedPauseMenuOption = 0
-		}
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		g.pauseMenuOptions[g.selectedPauseMenuOption].action(g)
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		g.currentGameState = g.previousGameState
-	}
-	return nil
-}
-
-func (g *Game) updateIntro() error {
-	if g.introDelayTimer > 0 {
-		g.introDelayTimer--
-		return nil
-	}
-
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		g.currentGameState = StatePlaying
-	}
-	return nil
-}
-
-func (g *Game) updatePlaying() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		g.stateBeforePause = g.currentGameState
-		g.currentGameState = StatePaused
-		return nil
-	}
-
-	if g.shake != nil {
-		g.shake.Update()
-	}
-
-	if g.animationManager.isMergeAnimationPlaying() {
-		g.updateMergeAnimation()
-		return nil
-	}
-	if g.animationManager.isMergeAnimationPlaying() {
-		g.updateMergeAnimation()
-		return nil
-	}
-	if g.animationManager.isWinningPlaying() {
-		g.updateWinAnimation()
-		return nil
-	}
-
-	g.updateEffects()
-
-	if g.needsRestart {
-		g.resetTimer--
-		if g.resetTimer <= 0 {
-			g.Reset()
-		}
-		return nil
-	}
-
-	actorEntry := g.turnManager.turnOrderDisplay[0]
-	switch actor := actorEntry.(type) {
-	case entities.Enemier:
-		g.handleEnemyTurn(actor)
-	case *entities.Player:
-		if actor == nil {
-			break
-		}
-
-		// If player is in the middle of a dash, continue it.
-		if actor.IsDashing() {
-			actor.Update(g.currentLevel())
-			g.checkCollisionToPlayerOnPlayerTurn(actor)
-			g.bunCollidesBun(actor)
-			if g.needsRestart {
-				return nil
-			}
-			break
-		}
-
-		actor.Update(g.currentLevel())
-
-		// TODO Too many if statements. Try to fix
-		dx, dy, isMoving, isDashing := actor.GetMoveInput()
-		if !isMoving {
-			break
-		}
-
-		if isDashing {
-			if actor.CanDash {
-				// The dash is initiated -->  Update() will keep to move in next turns
-				if actor.StartDash(g.currentLevel(), dx, dy) {
-					g.advanceTurn()
-				}
-			}
-		} else {
-			path := actor.CalculateMovePath(g.currentLevel(), dx, dy)
-			if len(path) == 0 {
-				break
-			}
-
-			moved := false
-			for _, point := range path {
-				oldX, oldY := actor.GridX, actor.GridY
-				actor.GridX, actor.GridY = point.X, point.Y
-				pushedPatty, stopPath := false, false
-				moved, pushedPatty, stopPath = g.checkBunPatty(actor, oldX, oldY)
-				if stopPath {
-					break
-				}
-				oldCanDash, oldCanWalk := actor.CanDash, actor.CanWalkThroughWalls
-				g.bunCollidesBun(actor)
-				g.checkBunCheeseMerge()
-				g.checkBunLettuceMerge()
-				g.checkCollisionToPlayerOnPlayerTurn(actor)
-
-				// Stop path execution on collision/merge or after pushing patty
-				if g.needsRestart || g.justMerged(actor, oldCanDash, oldCanWalk) || pushedPatty {
-					break
-				}
-			}
-
-			if moved {
-				if !g.alreadyMerged() {
-					g.attemptMergeBurger()
-				} else {
-					g.checkWinCondition(g.turnManager.getPlayerType(config.MergedBurgerType))
-				}
-				if !g.animationManager.blockingAnimation() {
-					g.advanceTurn()
-				}
-			}
-		}
-	}
-	return nil
-}
-
 // TODO: Fix ugly return of 3 params
 // checkBunPatty returns 3 params: moved, pusedPatty, stopPath
 func (g *Game) checkBunPatty(actor *entities.Player, oldX, oldY int) (bool, bool, bool) {
@@ -351,9 +156,6 @@ func (g *Game) checkBunPatty(actor *entities.Player, oldX, oldY int) (bool, bool
 	}
 	return moved, pushedPatty, false
 }
-func (g *Game) updateEffects() {
-	g.animationManager.Update()
-}
 
 func (g *Game) isTileOccupiedByCharacter(x, y int) bool {
 	for _, char := range g.turnManager.turnOrderDisplay {
@@ -371,46 +173,12 @@ func (g *Game) isTileOccupiedByCharacter(x, y int) bool {
 	}
 	return false
 }
-func (g *Game) updateMergeAnimation() {
-	if !g.animationManager.isMergeAnimationPlaying() {
-		return
-	}
-	g.animationManager.Update()
-
-	if !g.animationManager.isMergeAnimationPlaying() {
-		g.performMerge()
-		g.advanceTurn()
-	}
-}
-
-func (g *Game) updateWinAnimation() {
-	if !g.animationManager.isWinningPlaying() {
-		return
-	}
-	g.animationManager.Update()
-
-	if !g.animationManager.isWinningPlaying() {
-		if g.currentGameState == StateEndless {
-			g.currentEndlessLevel++
-			g.startEndlessGame() // This reloads the endless mode
-		} else {
-			g.levelManager.passNextLevel() // Mark level as complete
-			// If we just beat the secret level (16), show the final win screen.
-			// Otherwise, go back to the select screen to reveal the secret level.
-			if g.levelManager.currentLevelIndex == 16 {
-				g.currentGameState = StateGameComplete
-			} else {
-				g.currentGameState = StateLevelSelect
-			}
-		}
-	}
-}
 
 func (g *Game) startLevel(levelNum int) {
 	constructor, ok := g.levelManager.levelConstructors[levelNum]
 	if !ok {
 		// All filled, this should not happen
-		constructor = level.NewIntro
+		constructor = level.NewEmptyLevel
 	}
 	g.level = constructor()
 	g.status = Playing
@@ -423,48 +191,24 @@ func (g *Game) startLevel(levelNum int) {
 	}
 }
 
-func (g *Game) drawMergeAnimation(screen *ebiten.Image) {
-	topBun := g.turnManager.getPlayerType(config.TopBun)
-	bottomBun := g.turnManager.getPlayerType(config.BottomBun)
-	patty := g.patty
-	g.animationManager.drawMergeAnimation(screen, patty, topBun, bottomBun)
-}
-
-func (g *Game) drawWinAnimation(screen *ebiten.Image) {
-	g.animationManager.drawWinningAnimation(screen)
-}
-
-func (g *Game) drawIntro(screen *ebiten.Image) {
-	if g.introDelayTimer > 0 {
-		return
+func (g *Game) levelToTurn() {
+	g.patty = &g.currentLevel().BurgerPatty
+	var characters []character
+	for _, v := range g.currentLevel().TurnOrderPattern {
+		switch actualActor := v.(type) {
+		case entities.Enemier:
+			characters = append(characters, actualActor)
+		case entities.Player:
+			characters = append(characters, &actualActor)
+		}
 	}
-
-	overlayColor := color.RGBA{0, 0, 0, 80}
-	ebitenutil.DrawRect(screen, 0, 0, float64(config.WindowWidth), float64(config.WindowHeight), overlayColor)
-
-	boxWidth := 400
-	boxHeight := 150
-	boxX := (config.WindowWidth - boxWidth) / 2
-	boxY := (config.WindowHeight-boxHeight)/2 + 100
-	boxColor := color.RGBA{40, 40, 40, 200}
-	ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxWidth), float64(boxHeight), boxColor)
-
-	introText := g.currentLevel().IntroText
-	lines := strings.Split(introText, "\n")
-	lineHeight := 16
-	totalTextHeight := len(lines) * lineHeight
-	startY := boxY + (boxHeight-totalTextHeight)/2
-
-	for i, line := range lines {
-		charWidth := 6
-		textX := boxX + (boxWidth-len(line)*charWidth)/2
-		textY := startY + i*lineHeight
-		ebitenutil.DebugPrintAt(screen, line, textX, textY)
+	g.turnManager.turnOrderDisplay = characters
+	// init active turn
+	if len(g.turnManager.turnOrderDisplay) > 0 {
+		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
+			p.IsActiveTurn = true
+		}
 	}
-}
-
-func (g *Game) drawEffects(screen *ebiten.Image) {
-	g.animationManager.drawEffects(screen)
 }
 
 func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
@@ -542,7 +286,8 @@ func (g *Game) startEndlessGame() {
 	slog.Info("Starting new endless game")
 	g.currentGameState = StateEndless
 	g.level = level.NewEndlessLevel(g.currentEndlessLevel)
-	g.startLevel(0)
+	g.status = Playing
+	g.levelToTurn()
 }
 
 func (g *Game) bunCollidesBun(player *entities.Player) {
@@ -578,20 +323,6 @@ func (g *Game) checkBunCheeseMerge() {
 		}
 	}
 }
-
-func (g *Game) cheesePower(bun, cheese *entities.Player) {
-	bun.CanDash = true
-	bun.Image = merge2Images(bun.Image, cheese.Image)
-	var newTurnOrder []character
-	for _, char := range g.turnManager.turnOrderDisplay {
-		if char == cheese {
-			continue
-		}
-		newTurnOrder = append(newTurnOrder, char)
-	}
-	g.turnManager.turnOrderDisplay = newTurnOrder
-}
-
 func (g *Game) checkBunLettuceMerge() {
 	lettucePlayers := g.turnManager.getPlayerTypes(config.Lettuce)
 	if len(lettucePlayers) == 0 {
@@ -613,6 +344,20 @@ func (g *Game) checkBunLettuceMerge() {
 	}
 }
 
+// cheesePower unites bun to lettuce and gives it the power of THE killer dash
+func (g *Game) cheesePower(bun, cheese *entities.Player) {
+	bun.CanDash = true
+	bun.Image = merge2Images(bun.Image, cheese.Image)
+	var newTurnOrder []character
+	for _, char := range g.turnManager.turnOrderDisplay {
+		if char == cheese {
+			continue
+		}
+		newTurnOrder = append(newTurnOrder, char)
+	}
+	g.turnManager.turnOrderDisplay = newTurnOrder
+}
+
 // lettucePower unites bun to lettuce and gives it the power of crossing walls
 func (g *Game) lettucePower(bun, lettuce *entities.Player) {
 	bun.CanWalkThroughWalls = true
@@ -628,156 +373,6 @@ func (g *Game) lettucePower(bun, lettuce *entities.Player) {
 	g.turnManager.turnOrderDisplay = newTurnOrder
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {
-	switch g.currentGameState {
-	case StateMenu:
-		g.menu.drawMenu(screen)
-	case StateLevelSelect:
-		g.levelManager.draw(screen)
-	case StateTutorial:
-		drawTutorial(screen)
-	case StateGameComplete:
-		g.drawGameComplete(screen)
-	case StatePlaying, StateEndless, StatePaused, StateIntro:
-		g.drawPlaying(screen)
-		if g.currentGameState == StateIntro {
-			g.drawIntro(screen)
-		}
-		if g.currentGameState == StatePaused {
-			g.drawPaused(screen)
-		}
-	}
-}
-
-func (g *Game) drawGameComplete(screen *ebiten.Image) {
-	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
-
-	title := "Congratulations!"
-	titleX := (config.WindowWidth - len(title)*8) / 2 // A bit wider for the !
-	ebitenutil.DebugPrintAt(screen, title, titleX, 150)
-
-	msg1 := "You have completed all the levels!"
-	msg1X := (config.WindowWidth - len(msg1)*6) / 2
-	ebitenutil.DebugPrintAt(screen, msg1, msg1X, 180)
-
-	msg2 := "Thanks for playing UniBun!"
-	msg2X := (config.WindowWidth - len(msg2)*6) / 2
-	ebitenutil.DebugPrintAt(screen, msg2, msg2X, 250)
-
-	prompt := "Press Enter to return to the Main Menu"
-	promptX := (config.WindowWidth - len(prompt)*6) / 2
-	ebitenutil.DebugPrintAt(screen, prompt, promptX, 330)
-}
-
-func (g *Game) drawPaused(screen *ebiten.Image) {
-	ebitenutil.DrawRect(screen, 0, 0, float64(config.WindowWidth), float64(config.WindowHeight), color.RGBA{0, 0, 0, 128})
-
-	for i, option := range g.pauseMenuOptions {
-		btnColor := color.RGBA{0x40, 0x40, 0x40, 0xFF}
-		if i == g.selectedPauseMenuOption {
-			btnColor = color.RGBA{0x80, 0x80, 0x80, 0xFF}
-		}
-		ebitenutil.DrawRect(screen, float64(option.rect.Min.X), float64(option.rect.Min.Y), float64(option.rect.Dx()), float64(option.rect.Dy()), btnColor)
-
-		charWidth := 6
-		charHeight := 16
-		textX := option.rect.Min.X + (option.rect.Dx()-len(option.text)*charWidth)/2
-		textY := option.rect.Min.Y + (option.rect.Dy()-charHeight)/2
-		ebitenutil.DebugPrintAt(screen, option.text, textX, textY)
-	}
-}
-
-func (g *Game) drawPlaying(screen *ebiten.Image) {
-	screen.Fill(color.Black)
-	if g.gameScreen == nil {
-		g.gameScreen = ebiten.NewImage(g.level.ScreenWidth(), g.level.ScreenHeight())
-	}
-	g.gameScreen.Clear()
-
-	g.gameScreen.Fill(color.RGBA{R: 0x10, G: 0x10, B: 0x10, A: 0xff})
-	g.currentLevel().Draw(g.gameScreen, g.patty == nil)
-	for _, character := range g.turnManager.turnOrderDisplay {
-		if character != nil {
-			if g.animationManager.isMergeAnimationPlaying() {
-				if p, ok := character.(*entities.Player); ok {
-					if p.PlayerType == config.TopBun || p.PlayerType == config.BottomBun {
-						continue
-					}
-				}
-			}
-			character.Draw(g.gameScreen)
-		}
-	}
-	if g.patty != nil {
-		if !g.animationManager.blockingAnimation() {
-			g.patty.Draw(g.gameScreen)
-		}
-	}
-
-	if g.animationManager.isMergeAnimationPlaying() {
-		g.drawMergeAnimation(g.gameScreen)
-	}
-	if g.animationManager.isWinningPlaying() {
-		g.drawWinAnimation(g.gameScreen)
-	}
-
-	g.drawEffects(g.gameScreen)
-
-	// Draw winning message
-	if g.status == Win {
-		drawWinning(g.gameScreen)
-	}
-	// Finally draw screen
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(config.PaddingLeft), float64(config.PaddingTop))
-	if g.shake != nil {
-		g.shake.shake(op)
-	}
-	screen.DrawImage(g.gameScreen, op)
-
-	g.drawTurnOrder(screen)
-}
-
-// Constants for Turn Order UI
-const (
-	turnOrderIconSize      = 24
-	turnOrderIconSpacing   = 6
-	turnOrderTextMarginX   = 10
-	turnOrderTextOffsetY   = 4
-	turnOrderIconTopMargin = 18
-)
-
-func (g *Game) drawTurnOrder(screen *ebiten.Image) {
-	uiAreaStartY := float64(g.currentLevel().ScreenHeight()) + config.PaddingTop
-
-	orderText := "Order:"
-	textRenderX := float64(config.PaddingLeft + turnOrderTextMarginX)
-
-	textRenderY := uiAreaStartY + float64(turnOrderIconTopMargin+turnOrderTextOffsetY)
-	ebitenutil.DebugPrintAt(screen, orderText, int(textRenderX), int(textRenderY))
-
-	// TODO: check other ways? Maybe use ebiten/text and text.BoundString
-	iconStartX := textRenderX + float64(len(orderText)*7) + float64(turnOrderIconSpacing) // Approx 7px per char for default font
-	for i, entity := range g.turnManager.turnOrderDisplay {
-		iconX := iconStartX + float64(i*(turnOrderIconSize+turnOrderIconSpacing))
-		iconY := uiAreaStartY + float64(turnOrderIconTopMargin)
-
-		switch item := entity.(type) {
-		case *entities.Player:
-			drawIcon(screen, item.Image, iconX, iconY)
-		case entities.Enemier:
-			drawIcon(screen, item.Icon(), iconX, iconY)
-		}
-	}
-}
-
-func drawIcon(screen *ebiten.Image, icon *ebiten.Image, iconX, iconY float64) {
-	op := &ebiten.DrawImageOptions{}
-	pixelX := float64(iconX)
-	pixelY := float64(iconY)
-	op.GeoM.Translate(pixelX, pixelY)
-	screen.DrawImage(icon, op)
-}
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return config.WindowWidth, config.WindowHeight
 }
@@ -819,6 +414,7 @@ func (g *Game) advanceTurn() {
 	g.buildTurnOrderDisplay()
 }
 
+// **** MERGING STUFF ****
 func (g *Game) performMerge() {
 	slog.Info("Burger components united!")
 	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
@@ -945,6 +541,7 @@ func (g *Game) Reset() {
 	}
 }
 
+// *** COLLISIONS
 func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 	for _, v := range g.turnManager.turnOrderDisplay {
 		switch player := v.(type) {
@@ -1019,44 +616,4 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 			}
 		}
 	}
-}
-
-func (g *Game) levelToTurn() {
-	g.patty = &g.currentLevel().BurgerPatty
-	var characters []character
-	for _, v := range g.currentLevel().TurnOrderPattern {
-		switch actualActor := v.(type) {
-		case entities.Enemier:
-			characters = append(characters, actualActor)
-		case entities.Player:
-			characters = append(characters, &actualActor)
-		}
-	}
-	g.turnManager.turnOrderDisplay = characters
-	// init active turn
-	if len(g.turnManager.turnOrderDisplay) > 0 {
-		if p, ok := g.turnManager.turnOrderDisplay[0].(*entities.Player); ok {
-			p.IsActiveTurn = true
-		}
-	}
-}
-
-func merge2Images(img1, img2 *ebiten.Image) *ebiten.Image {
-	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
-
-	opBase := &ebiten.DrawImageOptions{}
-	mergedImage.DrawImage(img1, opBase)
-
-	opOverlay := &ebiten.DrawImageOptions{}
-
-	w, h := img2.Bounds().Dx(), img2.Bounds().Dy()
-
-	// stretch second image to be always a 32x12 and put it on top
-	// TODO: A bit strange to have the cheese on top of the top bun... but this is simpler
-	sx := float64(config.TileSize) / float64(w)
-	sy := 12.0 / float64(h)
-	opOverlay.GeoM.Scale(sx, sy)
-	mergedImage.DrawImage(img2, opOverlay)
-
-	return mergedImage
 }

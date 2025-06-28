@@ -23,24 +23,8 @@ type levelManager struct {
 
 func newLevelManager(startLevelFunc func(levelNum int)) *levelManager {
 	return &levelManager{
-		startLevelFunc: startLevelFunc,
-		completedLevels: map[int]bool{
-			1:  true,
-			2:  true,
-			3:  true,
-			4:  true,
-			5:  true,
-			6:  true,
-			7:  true,
-			8:  true,
-			9:  true,
-			10: true,
-			11: true,
-			12: true,
-			13: true,
-			14: true,
-			15: true,
-		},
+		startLevelFunc:   startLevelFunc,
+		completedLevels:  make(map[int]bool),
 		selectedLevelBox: 0,
 		levelConstructors: map[int]func() *level.Level{
 			1:  level.NewIntro,
