@@ -1,11 +1,11 @@
 package entities
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/common"
 	"image"
 	"log/slog"
-
-	"github.com/mikelangelon/unibun/assets"
 )
 
 type PathEnemy struct {
@@ -16,6 +16,7 @@ type PathEnemy struct {
 	// Store initial state for reset TODO find better way
 	initialPathIndex int
 	initialDirection int
+	pathDirection    int
 	initialAsset     []byte
 }
 
@@ -29,9 +30,10 @@ func NewPathEnemy(startX, startY int, path []image.Point) *PathEnemy {
 		initialY = path[0].Y
 	}
 	return &PathEnemy{
-		Enemy:            NewEnemy(initialX, initialY, common.GetImage(assets.Mouse)),
+		Enemy:            NewEnemy(initialX, initialY, []*ebiten.Image{common.GetImage(assets.Mouse)}),
 		path:             path,
 		currentPathIndex: 0,
+		pathDirection:    1,
 		initialPathIndex: 0,
 	}
 }
@@ -40,6 +42,7 @@ func NewPathEnemy(startX, startY int, path []image.Point) *PathEnemy {
 func (e *PathEnemy) Reset() {
 	e.Enemy.Reset()
 	e.currentPathIndex = e.initialPathIndex
+	e.pathDirection = e.initialDirection
 }
 
 func (e *PathEnemy) Update(_ Level) bool {
@@ -49,13 +52,15 @@ func (e *PathEnemy) Update(_ Level) bool {
 }
 
 func (e *PathEnemy) followPath() (int, int) {
-	potentialNextPathIndex := e.currentPathIndex + e.facingDirection
+	potentialNextPathIndex := e.currentPathIndex + e.pathDirection
 
 	if potentialNextPathIndex >= len(e.path) {
 		// Reached the end, reverse direction and move to the second to last point
+		e.pathDirection = -1
 		e.currentPathIndex = len(e.path) - 2
 	} else if potentialNextPathIndex < 0 {
 		// If it was at path[0], it should move to path[1].
+		e.pathDirection = 1
 		e.currentPathIndex = 1
 	} else {
 		// Continue in the current direction

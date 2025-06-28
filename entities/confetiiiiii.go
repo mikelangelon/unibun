@@ -117,13 +117,13 @@ func (m *MergeAnimation) ActivateMerge(patty *BurgerPatty, topBun, bottomBun *Pl
 }
 
 func CreateConfetti(gridX, gridY int) []*ConfettiParticle {
-	return createConfettiParticles(gridX, gridY, generateColor)
+	return createConfettiParticles(gridX, gridY, 30, generateColor)
 }
 
 func CreateBlood(gridX, gridY int) []*ConfettiParticle {
-	return createConfettiParticles(gridX, gridY, generateBlood)
+	return createConfettiParticles(gridX, gridY, 10, generateBlood)
 }
-func createConfettiParticles(gridX, gridY int, generateColor func() color.RGBA) []*ConfettiParticle {
+func createConfettiParticles(gridX, gridY int, life int, generateColor func() color.RGBA) []*ConfettiParticle {
 	particles := make([]*ConfettiParticle, 100)
 	centerX := float64(gridX*config.TileSize + config.TileSize/2)
 	centerY := float64(gridY*config.TileSize + config.TileSize/2)
@@ -136,7 +136,7 @@ func createConfettiParticles(gridX, gridY int, generateColor func() color.RGBA) 
 			y:     centerY,
 			vx:    math.Cos(angle) * speed,
 			vy:    math.Sin(angle) * speed,
-			life:  30 + rand.Intn(30),
+			life:  life + rand.Intn(30),
 			color: generateColor(),
 		}
 	}

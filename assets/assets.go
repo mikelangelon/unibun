@@ -23,20 +23,23 @@ var (
 	//go:embed client.png
 	Client []byte
 
+	// Animals
 	//go:embed pidgeon.png
 	Pidgeon []byte
-
 	//go:embed mouse.png
 	Mouse []byte
-
 	//go:embed snake.png
 	Snake []byte
-
 	//go:embed duck.png
 	Duck []byte
-
 	//go:embed cat.png
 	Cat []byte
+	//go:embed fly.png
+	Fly []byte
+	//go:embed fly2.png
+	Fly2 []byte
+	//go:embed fly3.png
+	Fly3 []byte
 
 	//go:embed tile2.png
 	FloorTile []byte

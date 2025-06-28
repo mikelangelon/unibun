@@ -1,8 +1,6 @@
 package entities
 
 import (
-	"math"
-
 	"github.com/mikelangelon/unibun/common"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -31,29 +29,7 @@ func (fe *FollowerEnemy) SetTarget(x, y int) {
 }
 
 func (fe *FollowerEnemy) Update(level Level) bool {
-	if fe.targetX == -1 || fe.targetY == -1 {
-		// Move random if there is no target
-		fe.gridX, fe.gridY = nextRandomMove(level, fe.Enemy)
-		return true
-	}
-
-	currentX, currentY := fe.gridX, fe.gridY
-
-	newX, newY := currentX, currentY
-	// Try to reduce distance to the target
-	if fe.targetX != currentX {
-		nextX := currentX + int(math.Copysign(1, float64(fe.targetX-currentX)))
-		if level.IsWalkable(nextX, currentY) {
-			newX = nextX
-		}
-	} else if fe.targetY != currentY {
-		nextY := currentY + int(math.Copysign(1, float64(fe.targetY-currentY)))
-		if level.IsWalkable(currentX, nextY) {
-			newY = nextY
-		}
-	}
-
-	return updatePosDirection(fe.Enemy, currentX, newX, newY)
+	return followTarget(level, fe.Enemy, fe.targetX, fe.targetY)
 }
 
 func (fe *FollowerEnemy) Reset() {
@@ -66,7 +42,7 @@ func (fe *FollowerEnemy) GetTargetPlayerType() config.PlayerType {
 	return fe.targetPlayerType
 }
 
-func duckColorByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
+func duckColorByTarget(targetType config.PlayerType, b []byte) []*ebiten.Image {
 	op := &ebiten.DrawImageOptions{}
 	switch targetType {
 	case config.TopBun:
@@ -76,5 +52,5 @@ func duckColorByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
 	}
 	coloredImage := ebiten.NewImage(config.TileSize, config.TileSize)
 	coloredImage.DrawImage(common.GetImage(b), op)
-	return coloredImage
+	return []*ebiten.Image{coloredImage}
 }

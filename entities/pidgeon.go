@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/common"
 	"math/rand"
@@ -12,7 +13,7 @@ type Pigeon struct {
 
 func NewPidgeon(startX, startY int) *Pigeon {
 	return &Pigeon{
-		Enemy: NewEnemy(startX, startY, common.GetImage(assets.Pidgeon)),
+		Enemy: NewEnemy(startX, startY, []*ebiten.Image{common.GetImage(assets.Pidgeon)}),
 	}
 }
 

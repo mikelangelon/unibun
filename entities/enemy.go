@@ -1,6 +1,8 @@
 package entities
 
 import (
+	"time"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/config"
 )
@@ -11,6 +13,7 @@ type Enemier interface {
 	Update(level Level) bool
 	Collision(player *Player) bool
 	Image() *ebiten.Image
+	Icon() *ebiten.Image
 	Reset()
 	Position() (int, int)
 }
@@ -18,18 +21,27 @@ type Enemier interface {
 type Enemy struct {
 	gridX, gridY               int
 	initialGridX, initialGridY int
-	image                      *ebiten.Image
-	facingDirection            int
+	images                     []*ebiten.Image
+	facingDirection            int // 1 for right, -1 for left
+
+	animationTimer     int
+	currentFrameIndex  int
+	animationDirection int
 }
 
-func NewEnemy(startX, startY int, img *ebiten.Image) *Enemy {
+const animationFrameDuration = int(200 * time.Millisecond / (time.Second / 60))
+
+func NewEnemy(startX, startY int, img []*ebiten.Image) *Enemy {
 	return &Enemy{
-		gridX:           startX,
-		gridY:           startY,
-		initialGridX:    startX,
-		initialGridY:    startY,
-		image:           img,
-		facingDirection: 1,
+		gridX:              startX,
+		gridY:              startY,
+		initialGridX:       startX,
+		initialGridY:       startY,
+		images:             img,
+		facingDirection:    1,
+		animationTimer:     animationFrameDuration,
+		currentFrameIndex:  0,
+		animationDirection: 1,
 	}
 }
 func (e *Enemy) Collision(player *Player) bool {
@@ -43,25 +55,43 @@ func (e *Enemy) Update(level Level) bool {
 }
 
 func (e *Enemy) Draw(screen *ebiten.Image) {
+	if len(e.images) > 1 {
+		e.animationTimer--
+		if e.animationTimer <= 0 {
+			e.animationTimer = animationFrameDuration
+			e.currentFrameIndex += e.animationDirection
+			if e.currentFrameIndex <= 0 || e.currentFrameIndex >= len(e.images)-1 {
+				e.animationDirection *= -1
+			}
+		}
+	}
+
 	op := &ebiten.DrawImageOptions{}
 	if e.facingDirection == -1 {
 		op.GeoM.Scale(-1, 1)
 		op.GeoM.Translate(float64(config.TileSize), 0)
 	}
+
 	pixelX := float64(e.gridX * config.TileSize)
 	pixelY := float64(e.gridY * config.TileSize)
 	op.GeoM.Translate(pixelX, pixelY)
-	screen.DrawImage(e.image, op)
+	screen.DrawImage(e.images[e.currentFrameIndex], op)
 }
 
 func (e *Enemy) Image() *ebiten.Image {
-	return e.image
+	return e.images[e.currentFrameIndex]
 }
 
+func (e *Enemy) Icon() *ebiten.Image {
+	return e.images[0]
+}
 func (e *Enemy) Reset() {
 	e.gridX = e.initialGridX
 	e.gridY = e.initialGridY
 	e.facingDirection = 1
+	e.animationTimer = animationFrameDuration
+	e.currentFrameIndex = 0
+	e.animationDirection = 1
 }
 
 func (e *Enemy) Position() (int, int) {

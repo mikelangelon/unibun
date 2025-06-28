@@ -92,10 +92,21 @@ func NewGame() *Game {
 }
 func (g *Game) initLevelConstructors() {
 	g.levelConstructors = map[int]func() *level.Level{
-		1: level.NewIntro,
-		2: level.NewLevel2,
-		3: level.NewLevel3,
-		4: level.NewLevel4,
+		1:  level.NewIntro,
+		2:  level.LettucePresentation,
+		3:  level.CheesePresentation,
+		4:  level.ManyObstacles,
+		5:  level.SnakesLevel,
+		6:  level.NewFlies,
+		7:  level.FourSnakes,
+		8:  level.NewLevel1,
+		9:  level.NewLevel1b,
+		10: level.FourSnakesReturn,
+		11: level.NewLevelLettuceMaze,
+		12: level.UseOtherObject,
+		13: level.NewLevel1c,
+		14: level.NewLevelLettuceMazeHard,
+		15: level.NewLevel3,
 	}
 }
 
@@ -522,12 +533,15 @@ func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
 		g.setFollowerTarget(fe)
 	} else if dfe, ok := enemy.(*entities.DashingFollowerEnemy); ok {
 		g.setFollowerTarget(&dfe.FollowerEnemy)
+	} else if dfe, ok := enemy.(*entities.Fly); ok {
+		g.setFlyTarget(dfe)
 	}
 
 	g.checkCollisionToPlayer(enemy)
 	turnConsumed := enemy.Update(g.currentLevel())
 	if turnConsumed {
 		g.checkCollisionToPlayer(enemy)
+		g.checkCollisionToPatty(enemy)
 		g.advanceTurn()
 	}
 }
@@ -539,6 +553,20 @@ func (g *Game) setFollowerTarget(fe *entities.FollowerEnemy) {
 		gridX, gridY = targetPlayer.GridX, targetPlayer.GridY
 	}
 	fe.SetTarget(gridX, gridY)
+}
+
+func (g *Game) setFlyTarget(f *entities.Fly) {
+	if g.patty != nil {
+		f.SetTarget(g.patty.GridX, g.patty.GridY)
+	} else {
+		targetPlayer := g.turnManager.getPlayerType(config.MergedBurgerType)
+		gridX, gridY := -1, -1
+		if targetPlayer != nil {
+			gridX, gridY = targetPlayer.GridX, targetPlayer.GridY
+		}
+		f.SetTarget(gridX, gridY)
+	}
+
 }
 
 func (g *Game) checkWinCondition(actor *entities.Player) {
@@ -780,7 +808,7 @@ func (g *Game) drawTurnOrder(screen *ebiten.Image) {
 		case *entities.Player:
 			drawIcon(screen, item.Image, iconX, iconY)
 		case entities.Enemier:
-			drawIcon(screen, item.Image(), iconX, iconY)
+			drawIcon(screen, item.Icon(), iconX, iconY)
 		}
 	}
 }
@@ -933,6 +961,8 @@ func (g *Game) Reset() {
 	var characters []character
 	for _, v := range g.currentLevel().TurnOrderPattern {
 		switch actualActor := v.(type) {
+		case entities.Enemier:
+			characters = append(characters, actualActor)
 		case *entities.PathEnemy:
 			characters = append(characters, actualActor)
 		case *entities.Pigeon:
@@ -958,6 +988,38 @@ func (g *Game) Reset() {
 }
 
 func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
+	for _, v := range g.turnManager.turnOrderDisplay {
+		switch player := v.(type) {
+		case *entities.Player:
+			if enemy.Collision(player) {
+				if !g.needsRestart {
+					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
+					g.resetTimer = shakeDefaultDuration + 10 // delay a bit
+				}
+				g.audios.eatingSoundPlayer.Rewind()
+				g.audios.eatingSoundPlayer.Play()
+				g.needsRestart = true
+			}
+		}
+	}
+}
+
+func (g *Game) checkCollisionToPatty(enemy entities.Enemier) {
+	if g.patty == nil {
+		return
+	}
+	if _, ok := enemy.(*entities.Fly); ok {
+		if enemy.Collision(&entities.Player{GridX: g.patty.GridX, GridY: g.patty.GridY}) {
+			if !g.needsRestart {
+				g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
+				g.resetTimer = shakeDefaultDuration + 10 // delay a bit
+			}
+			g.audios.eatingSoundPlayer.Rewind()
+			g.audios.eatingSoundPlayer.Play()
+			g.needsRestart = true
+		}
+	}
+
 	for _, v := range g.turnManager.turnOrderDisplay {
 		switch player := v.(type) {
 		case *entities.Player:

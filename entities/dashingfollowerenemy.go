@@ -104,7 +104,7 @@ func (dfe *DashingFollowerEnemy) Reset() {
 	dfe.dashCounter = dfe.turnsToDash
 }
 
-func imageByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
+func imageByTarget(targetType config.PlayerType, b []byte) []*ebiten.Image {
 	op := &ebiten.DrawImageOptions{}
 	// Coloring based on target
 	switch targetType {
@@ -119,5 +119,5 @@ func imageByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
 	}
 	coloredImage := ebiten.NewImage(config.TileSize, config.TileSize)
 	coloredImage.DrawImage(common.GetImage(b), op)
-	return coloredImage
+	return []*ebiten.Image{coloredImage}
 }

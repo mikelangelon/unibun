@@ -26,14 +26,17 @@ The plan:
   - [ ] Bacon --> ??
 - [ ] Enemies?
   - [x] Pidgeon --> random move
+  - [x] Mouse --> follows a path
+  - [x] Duck --> follows target
   - [x] Snake --> follow target + dash --> a bit buggy
-  - [ ] Rat
+  - [x] Fly --> follows patty
+  - [x] Cat --> just... stays
   - [ ] Animate characters
 - [x] Pass to next level
 - [x] Sounds
 - [x] Music
 - [ ] Endless mode
-- [ ] Show all levels individually
+- [X] Show all levels individually
 
 ## Packages
 - Game --> Main game with all the logic
