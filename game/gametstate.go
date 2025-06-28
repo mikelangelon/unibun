@@ -9,4 +9,5 @@ const (
 	StateExiting
 	StatePaused
 	StateIntro
+	StateLevelSelect
 )

@@ -2,6 +2,7 @@ package game
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -20,7 +21,7 @@ import (
 )
 
 type Game struct {
-	levels              []*level.Level
+	level               *level.Level
 	currentLevelIndex   int
 	currentEndlessLevel int
 	turnManager         turnManager
@@ -51,6 +52,10 @@ type Game struct {
 	stateBeforePause  GameState
 
 	animationManager *animationManager
+
+	// To select level
+	levelConstructors map[int]func() *level.Level
+	selectedLevelBox  int
 }
 
 type character interface {
@@ -73,16 +78,25 @@ func NewGame() *Game {
 	}
 	g.menuBackground = ebiten.NewImageFromImage(img)
 
-	g.initLevels()
 	g.initMenu()
 	g.initPauseMenu()
+	g.initLevelConstructors()
 	g.currentGameState = StateMenu
+	g.selectedLevelBox = 0
 	g.previousGameState = -1
 	g.resetTimer = 0
 	g.animationManager = newAnimationManager()
 	g.introDelayTimer = 0
 
 	return &g
+}
+func (g *Game) initLevelConstructors() {
+	g.levelConstructors = map[int]func() *level.Level{
+		1: level.NewLevel1,
+		2: level.NewLevel2,
+		3: level.NewLevel3,
+		4: level.NewLevel4,
+	}
 }
 
 func (g *Game) initPauseMenu() {
@@ -134,6 +148,8 @@ func (g *Game) Update() error {
 		return g.updateMenu()
 	case StatePlaying, StateEndless:
 		return g.updatePlaying()
+	case StateLevelSelect:
+		return g.updateLevelSelect()
 	case StateIntro:
 		return g.updateIntro()
 	case StatePaused:
@@ -154,18 +170,42 @@ func (g *Game) handleGameStateChange() {
 	if g.previousGameState == StateIntro && g.currentGameState == StatePlaying {
 		return
 	}
+	if g.previousGameState == StateMenu && g.currentGameState == StateLevelSelect {
+		return
+	}
 	g.audios.menuMusicPlayer.Pause()
 	g.audios.mainMusicPlayer.Pause()
 
 	switch g.currentGameState {
-	case StateMenu:
+	case StateMenu, StateLevelSelect:
 		g.audios.menuMusicPlayer.Rewind()
 		g.audios.menuMusicPlayer.Play()
 	case StateIntro, StatePlaying, StateEndless:
 		g.introDelayTimer = 10
-		g.audios.mainMusicPlayer.Rewind()
-		g.audios.mainMusicPlayer.Play()
+		g.audios.menuMusicPlayer.Rewind()
+		g.audios.menuMusicPlayer.Play()
 	}
+}
+
+func (g *Game) updateLevelSelect() error {
+	cols := 5
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) && (g.selectedLevelBox+1)%cols != 0 && g.selectedLevelBox < 14 {
+		g.selectedLevelBox++
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) && g.selectedLevelBox%cols != 0 {
+		g.selectedLevelBox--
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) && g.selectedLevelBox >= cols {
+		g.selectedLevelBox -= cols
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) && g.selectedLevelBox < 10 {
+		g.selectedLevelBox += cols
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		g.currentLevelIndex = g.selectedLevelBox + 1
+		g.startLevel(g.currentLevelIndex)
+	}
+	return nil
 }
 
 func (g *Game) updatePaused() error {
@@ -369,11 +409,28 @@ func (g *Game) updateWinAnimation() {
 	if !g.animationManager.isWinningPlaying() {
 		if g.currentGameState == StateEndless {
 			g.currentEndlessLevel++
-			g.startEndlessGame()
+			g.startEndlessGame() // This reloads the endless mode
 		} else {
 			g.increaseLevel()
-			g.levelToTurn()
+			g.startLevel(g.currentLevelIndex)
 		}
+	}
+}
+
+func (g *Game) startLevel(levelNum int) {
+	constructor, ok := g.levelConstructors[levelNum]
+	if !ok {
+		// Plan B for now
+		constructor = level.NewLevel0
+	}
+	g.level = constructor()
+	g.status = Playing
+	g.levelToTurn()
+
+	if g.currentLevel().IntroText != "" {
+		g.currentGameState = StateIntro
+	} else {
+		g.currentGameState = StatePlaying
 	}
 }
 
@@ -414,6 +471,41 @@ func (g *Game) drawIntro(screen *ebiten.Image) {
 		textX := boxX + (boxWidth-len(line)*charWidth)/2
 		textY := startY + i*lineHeight
 		ebitenutil.DebugPrintAt(screen, line, textX, textY)
+	}
+}
+
+// draws 15 boxes, in a 3x5 grid.
+func (g *Game) drawLevelSelect(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
+	ebitenutil.DebugPrintAt(screen, "Select a Level", config.WindowWidth/2-70, 40)
+
+	const (
+		cols        = 5
+		rows        = 3
+		boxSize     = 80
+		padding     = 20
+		totalWidth  = cols*boxSize + (cols-1)*padding
+		totalHeight = rows*boxSize + (rows-1)*padding
+		startX      = (config.WindowWidth - totalWidth) / 2
+		startY      = (config.WindowHeight - totalHeight) / 2
+	)
+
+	for i := 0; i < 15; i++ {
+		col := i % cols
+		row := i / cols
+		boxX := startX + col*(boxSize+padding)
+		boxY := startY + row*(boxSize+padding)
+
+		boxColor := color.RGBA{0x40, 0x40, 0x40, 0xFF}
+		if i == g.selectedLevelBox {
+			boxColor = color.RGBA{0x90, 0x90, 0x90, 0xFF}
+		}
+		ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxSize), float64(boxSize), boxColor)
+
+		levelNumStr := fmt.Sprintf("%d", i+1)
+		textX := boxX + (boxSize-len(levelNumStr)*6)/2
+		textY := boxY + (boxSize-16)/2
+		ebitenutil.DebugPrintAt(screen, levelNumStr, textX, textY)
 	}
 }
 
@@ -476,19 +568,11 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 	return (p.CanDash && !oldCanDash) || (p.CanWalkThroughWalls && !oldCanWalk)
 }
 
-func (g *Game) initLevels() {
-	g.levels = []*level.Level{level.NewLevel0(), level.NewLevel1(), level.NewLevel2(), level.NewLevel3(), level.NewLevel4()}
-	g.currentLevelIndex = 0
-	g.status = Playing
-	g.levelToTurn()
-}
-
 func (g *Game) startEndlessGame() {
 	slog.Info("Starting new endless game")
 	g.currentGameState = StateEndless
-	g.levels = []*level.Level{level.NewEndlessLevel(g.currentEndlessLevel)}
-	g.status = Playing
-	g.levelToTurn()
+	g.level = level.NewEndlessLevel(g.currentEndlessLevel)
+	g.startLevel(0)
 }
 
 func (g *Game) bunCollidesBun(player *entities.Player) {
@@ -576,9 +660,8 @@ func (g *Game) lettucePower(bun, lettuce *entities.Player) {
 }
 
 func (g *Game) increaseLevel() {
-	if len(g.levels) <= g.currentLevelIndex {
-		// no more levels :'(
-		return
+	if g.currentLevelIndex >= 15 {
+		// TODO Show an ending
 	}
 	g.currentLevelIndex++
 	g.status = Playing
@@ -587,6 +670,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.currentGameState {
 	case StateMenu:
 		g.drawMenu(screen)
+	case StateLevelSelect:
+		g.drawLevelSelect(screen)
 	case StatePlaying, StateEndless, StatePaused, StateIntro:
 		g.drawPlaying(screen)
 		if g.currentGameState == StateIntro {
@@ -619,7 +704,7 @@ func (g *Game) drawPaused(screen *ebiten.Image) {
 func (g *Game) drawPlaying(screen *ebiten.Image) {
 	screen.Fill(color.Black)
 	if g.gameScreen == nil {
-		g.gameScreen = ebiten.NewImage(g.levels[0].ScreenWidth(), g.levels[0].ScreenHeight())
+		g.gameScreen = ebiten.NewImage(g.level.ScreenWidth(), g.level.ScreenHeight())
 	}
 	g.gameScreen.Clear()
 
@@ -712,7 +797,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) currentLevel() *level.Level {
-	return g.levels[g.currentLevelIndex]
+	return g.level
 }
 
 func (g *Game) buildTurnOrderDisplay() {

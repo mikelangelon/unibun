@@ -3,7 +3,6 @@ package game
 import (
 	"image"
 	"image/color"
-	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -26,13 +25,7 @@ func (g *Game) initMenu() {
 		{
 			Text: "Play",
 			Action: func(game *Game) {
-				game.initLevels()
-				if game.currentLevel().IntroText != "" {
-					game.currentGameState = StateIntro
-				} else {
-					game.currentGameState = StatePlaying
-				}
-				log.Println("Starting new game (Play)")
+				game.currentGameState = StateLevelSelect
 			},
 		},
 		{
