@@ -32,7 +32,16 @@ var (
 	//go:embed cat.png
 	Cat []byte
 
-	//go:embed menu.png
+	//go:embed tile2.png
+	FloorTile []byte
+
+	//go:embed tile2b.png
+	FloorTileB []byte
+
+	//go:embed tile2c.png
+	FloorTileC []byte
+
+	//go:embed menu2.png
 	MenuBackground []byte
 
 	/**

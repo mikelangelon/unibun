@@ -1,11 +1,13 @@
 package level
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"image"
+
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/common"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
-	"image"
 )
 
 func NewLevel0() *Level {
@@ -719,7 +721,8 @@ func newLevel() *Level {
 		Winning: []Position{
 			{X: 1, Y: 1},
 		},
-		WinningImg: common.GetImage(assets.Client),
+		WinningImg:   common.GetImage(assets.Client),
+		FloorTileImg: []*ebiten.Image{common.GetImage(assets.FloorTile), common.GetImage(assets.FloorTileB), common.GetImage(assets.FloorTileC)},
 	}
 }
 

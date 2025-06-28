@@ -1,13 +1,11 @@
 package level
 
 import (
-	"image/color"
+	"math/rand/v2"
 
 	"github.com/mikelangelon/unibun/entities"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/mikelangelon/unibun/config"
 )
 
@@ -17,40 +15,46 @@ type Level struct {
 	BurgerPatty      entities.BurgerPatty
 	Winning          []Position
 	WinningImg       *ebiten.Image
+	FloorTileImg     []*ebiten.Image
 	IntroText        string
+
+	FloorMap *ebiten.Image
+}
+
+func (l *Level) getRandomTile() *ebiten.Image {
+	defaultTileProb := 20
+	r := rand.IntN(defaultTileProb + len(l.FloorTileImg))
+	if r < defaultTileProb {
+		return l.FloorTileImg[0]
+	}
+	return l.FloorTileImg[r-defaultTileProb]
 }
 
 func (l *Level) Draw(screen *ebiten.Image) {
-	for ri, row := range l.cells {
-		for ci, cell := range row {
-			cellX := float64(ci * config.TileSize)
-			cellY := float64(ri * config.TileSize)
-			var cellColor color.Color
-			switch cell.Type {
-			case CellTypeFloor:
-				cellColor = color.RGBA{R: 0x60, G: 0x60, B: 0x60, A: 0xff}
-			case CellTypeWall:
-				cellColor = color.RGBA{R: 0x30, G: 0x30, B: 0x80, A: 0xff}
-			case CellTypeEmpty:
-				cellColor = color.RGBA{R: 0x00, G: 0x00, B: 0x00, A: 0xff}
-			default:
-				cellColor = color.White
+	if l.FloorMap == nil {
+		l.FloorMap = ebiten.NewImage(l.ScreenWidth(), l.ScreenHeight())
+		for ri, row := range l.cells {
+			for ci, cell := range row {
+				cellX := float64(ci * config.TileSize)
+				cellY := float64(ri * config.TileSize)
+
+				if cell.Type == CellTypeFloor && len(l.FloorTileImg) > 0 {
+					tile := l.getRandomTile()
+					op := &ebiten.DrawImageOptions{}
+					if (ri+ci)%2 == 0 {
+						op.ColorScale.Scale(0.8, 0.8, 0.8, 1.0)
+					} else {
+						op.ColorScale.Scale(0.5, 0.5, 0.5, 1.0)
+					}
+					op.GeoM.Translate(cellX, cellY)
+					l.FloorMap.DrawImage(tile, op)
+					continue
+				}
 			}
-			ebitenutil.DrawRect(screen, cellX, cellY, float64(config.TileSize), float64(config.TileSize), cellColor)
 		}
 	}
 
-	gridColor := color.RGBA{R: 0x40, G: 0x40, B: 0x40, A: 0xff}
-	strokeWidth := float32(1)
-	for i := 0; i <= l.gridCols(); i++ {
-		x := float32(i * config.TileSize)
-		vector.StrokeLine(screen, x, 0, x, float32(l.ScreenHeight()), strokeWidth, gridColor, false)
-	}
-	for i := 0; i <= l.gridRows(); i++ {
-		y := float32(i * config.TileSize)
-		vector.StrokeLine(screen, 0, y, float32(l.ScreenWidth()), y, strokeWidth, gridColor, false)
-	}
-
+	screen.DrawImage(l.FloorMap, &ebiten.DrawImageOptions{})
 	for _, v := range l.Winning {
 		winRectX := float64(v.X * config.TileSize)
 		winRectY := float64(v.Y * config.TileSize)
