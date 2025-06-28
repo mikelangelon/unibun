@@ -227,7 +227,7 @@ func drawIcon(screen *ebiten.Image, icon *ebiten.Image, iconX, iconY float64) {
 	screen.DrawImage(icon, op)
 }
 
-func merge2Images(img1, img2 *ebiten.Image) *ebiten.Image {
+func merge2Images(img1, img2 *ebiten.Image, y float64) *ebiten.Image {
 	mergedImage := ebiten.NewImage(config.TileSize, config.TileSize)
 
 	opBase := &ebiten.DrawImageOptions{}
@@ -242,6 +242,7 @@ func merge2Images(img1, img2 *ebiten.Image) *ebiten.Image {
 	sx := float64(config.TileSize) / float64(w)
 	sy := 12.0 / float64(h)
 	opOverlay.GeoM.Scale(sx, sy)
+	opOverlay.GeoM.Translate(0, y)
 	mergedImage.DrawImage(img2, opOverlay)
 
 	return mergedImage

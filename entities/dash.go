@@ -30,7 +30,7 @@ func (ds *DashState) Start(startX, startY, dx, dy int, speed int, level Level, c
 	for i := 1; i <= speed; i++ {
 		nextX, nextY := currentX+dx, currentY+dy
 		// TODO code is duplicated in Dash & normal movement --> Extract common parts
-		if canWalkThroughWalls && level.OutOfBounds(nextX, nextY) {
+		if canWalkThroughWalls && !level.OutOfBounds(nextX, nextY) {
 			tempPath = append(tempPath, image.Point{X: nextX, Y: nextY})
 			currentX = nextX
 			currentY = nextY

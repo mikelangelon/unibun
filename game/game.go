@@ -354,7 +354,7 @@ func (g *Game) checkBunLettuceMerge() {
 // cheesePower unites bun to lettuce and gives it the power of THE killer dash
 func (g *Game) cheesePower(bun, cheese *entities.Player) {
 	bun.CanDash = true
-	bun.Image = merge2Images(bun.Image, cheese.Image)
+	bun.Image = merge2Images(bun.Image, cheese.Image, 15.0)
 	var newTurnOrder []character
 	for _, char := range g.turnManager.turnOrderDisplay {
 		if char == cheese {
@@ -368,7 +368,7 @@ func (g *Game) cheesePower(bun, cheese *entities.Player) {
 // lettucePower unites bun to lettuce and gives it the power of crossing walls
 func (g *Game) lettucePower(bun, lettuce *entities.Player) {
 	bun.CanWalkThroughWalls = true
-	bun.Image = merge2Images(bun.Image, lettuce.Image)
+	bun.Image = merge2Images(bun.Image, lettuce.Image, 0.0)
 
 	var newTurnOrder []character
 	for _, char := range g.turnManager.turnOrderDisplay {
