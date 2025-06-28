@@ -17,9 +17,9 @@ type MenuOption struct {
 }
 
 func (g *Game) initMenu() {
-	totalMenuWidth := config.MenuOptionWidth*3 + config.MenuOptionSpacing*2
-	startX := (config.WindowWidth-totalMenuWidth)/2 + 30
-	centerY := config.WindowHeight/2 + 100
+	centerX := config.WindowWidth / 2
+	totalMenuHeight := config.MenuOptionHeight*3 + config.MenuOptionSpacing*2
+	startY := (config.WindowHeight-totalMenuHeight)/2 + 100
 
 	g.menuOptions = []MenuOption{
 		{
@@ -35,7 +35,7 @@ func (g *Game) initMenu() {
 			},
 		},
 		{
-			Text: "Tutorial",
+			Text: "How to Play",
 			Action: func(game *Game) {
 				game.currentGameState = StateTutorial
 			},
@@ -44,10 +44,10 @@ func (g *Game) initMenu() {
 	for i := range g.menuOptions {
 		option := &g.menuOptions[i]
 		option.Rect = image.Rect(
-			startX+i*(config.MenuOptionWidth+config.MenuOptionSpacing),
-			centerY-config.MenuOptionHeight/2,
-			startX+i*(config.MenuOptionWidth+config.MenuOptionSpacing)+config.MenuOptionWidth,
-			centerY+config.MenuOptionHeight/2,
+			centerX-config.MenuOptionWidth/2,
+			startY+i*(config.MenuOptionHeight+config.MenuOptionSpacing),
+			centerX+config.MenuOptionWidth/2,
+			startY+i*(config.MenuOptionHeight+config.MenuOptionSpacing)+config.MenuOptionHeight,
 		)
 	}
 
@@ -55,13 +55,13 @@ func (g *Game) initMenu() {
 }
 
 func (g *Game) updateMenu() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
 		g.selectedMenuOption--
 		if g.selectedMenuOption < 0 {
 			g.selectedMenuOption = len(g.menuOptions) - 1
 		}
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
 		g.selectedMenuOption++
 		if g.selectedMenuOption >= len(g.menuOptions) {
 			g.selectedMenuOption = 0

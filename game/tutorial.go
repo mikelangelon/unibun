@@ -1,12 +1,13 @@
 package game
 
 import (
+	"image/color"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/common"
 	"github.com/mikelangelon/unibun/config"
-	"image/color"
 )
 
 func drawTutorial(screen *ebiten.Image) {
@@ -23,7 +24,7 @@ func drawTutorial(screen *ebiten.Image) {
 	}
 
 	// Title
-	title := "TUTORIAL"
+	title := "Bun-structions"
 	titleX := (config.WindowWidth - len(title)*6) / 2
 	drawText(title, titleX, yPos)
 	yPos += 40
@@ -33,17 +34,17 @@ func drawTutorial(screen *ebiten.Image) {
 	bottomBunImg := common.GetImage(assets.BottomBun)
 	drawImage(topBunImg, 50, float64(yPos))
 	drawImage(bottomBunImg, 50+32+10, float64(yPos))
-	drawText("You control these buns.", 50+32*2+20, yPos+8)
+	drawText("You control these Buns.", 50+32*2+20, yPos+8)
 	yPos += 50
 
 	// Patty
 	pattyImg := common.GetImage(assets.BurgerPatty)
 	drawImage(pattyImg, 50, float64(yPos))
-	drawText("Your goal is to unite the buns with the patty.", 50+32+10, yPos+8)
+	drawText("Your goal is to unite the Buns with the Patty.", 50+32+10, yPos+8)
 	yPos += 50
 
 	// Burger Combination Guide
-	drawText("Form the burger like this:", 50, yPos)
+	drawText("Form the Burger like this:", 50, yPos)
 	yPos += 25
 	drawImage(topBunImg, 50, float64(yPos))
 	drawImage(pattyImg, 50+32, float64(yPos))

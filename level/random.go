@@ -104,7 +104,7 @@ func NewEndlessLevel(lvlIndex int) *Level {
 		r := rand.Float64() * 100
 
 		if len(availablePlayerTypes) == 0 || r < enemyThreshold {
-			enemy = entities.NewPidgeon(pos.X, pos.Y)
+			enemy = entities.NewPigeon(pos.X, pos.Y)
 		} else {
 			targetType := availablePlayerTypes[rand.IntN(len(availablePlayerTypes))]
 			if r < dashThreshold {

@@ -22,7 +22,6 @@ import (
 
 type Game struct {
 	level               *level.Level
-	currentLevelIndex   int
 	currentEndlessLevel int
 	turnManager         turnManager
 	patty               *entities.BurgerPatty
@@ -54,9 +53,7 @@ type Game struct {
 	animationManager *animationManager
 
 	// To select level
-	levelConstructors map[int]func() *level.Level
-	selectedLevelBox  int
-	completedLevels   map[int]bool
+	levelManager *levelManager
 }
 
 type character interface {
@@ -77,35 +74,15 @@ func NewGame() *Game {
 
 	g.initMenu()
 	g.initPauseMenu()
-	g.initLevelConstructors()
-	g.completedLevels = make(map[int]bool)
+	g.levelManager = newLevelManager(g.startLevel)
 	g.currentGameState = StateMenu
-	g.selectedLevelBox = 0
+
 	g.previousGameState = -1
 	g.resetTimer = 0
 	g.animationManager = newAnimationManager()
 	g.introDelayTimer = 0
 
 	return &g
-}
-func (g *Game) initLevelConstructors() {
-	g.levelConstructors = map[int]func() *level.Level{
-		1:  level.NewIntro,
-		2:  level.LettucePresentation,
-		3:  level.CheesePresentation,
-		4:  level.FirstRealLevel,
-		5:  level.AvoidTheLettuce,
-		6:  level.NewFlies,
-		7:  level.FourSnakes,
-		8:  level.PushThePatty,
-		9:  level.PuzzleBuns,
-		10: level.ManyObstacles,
-		11: level.FourSnakesReturn,
-		12: level.NewLevelLettuceMaze,
-		13: level.AnotherLettuce,
-		14: level.NewLevelLettuceMazeHard,
-		15: level.SnakesLevel,
-	}
 }
 
 func (g *Game) initPauseMenu() {
@@ -158,7 +135,7 @@ func (g *Game) Update() error {
 	case StatePlaying, StateEndless:
 		return g.updatePlaying()
 	case StateLevelSelect:
-		return g.updateLevelSelect()
+		return g.levelManager.Update()
 	case StateIntro:
 		return g.updateIntro()
 	case StateTutorial:
@@ -196,27 +173,6 @@ func (g *Game) handleGameStateChange() {
 		g.audios.menuMusicPlayer.Rewind()
 		g.audios.menuMusicPlayer.Play()
 	}
-}
-
-func (g *Game) updateLevelSelect() error {
-	cols := 5
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) && (g.selectedLevelBox+1)%cols != 0 && g.selectedLevelBox < 14 {
-		g.selectedLevelBox++
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) && g.selectedLevelBox%cols != 0 {
-		g.selectedLevelBox--
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) && g.selectedLevelBox >= cols {
-		g.selectedLevelBox -= cols
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) && g.selectedLevelBox < 10 {
-		g.selectedLevelBox += cols
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		g.currentLevelIndex = g.selectedLevelBox + 1
-		g.startLevel(g.currentLevelIndex)
-	}
-	return nil
 }
 
 func (g *Game) updateTutorial() error {
@@ -429,19 +385,14 @@ func (g *Game) updateWinAnimation() {
 			g.currentEndlessLevel++
 			g.startEndlessGame() // This reloads the endless mode
 		} else {
-			if g.currentLevelIndex > 0 {
-				g.completedLevels[g.currentLevelIndex] = true
-			}
-			if g.currentLevelIndex < len(g.levelConstructors)-1 {
-				g.selectedLevelBox = g.currentLevelIndex
-			}
+			g.levelManager.passNextLevel()
 			g.currentGameState = StateLevelSelect
 		}
 	}
 }
 
 func (g *Game) startLevel(levelNum int) {
-	constructor, ok := g.levelConstructors[levelNum]
+	constructor, ok := g.levelManager.levelConstructors[levelNum]
 	if !ok {
 		// All filled, this should not happen
 		constructor = level.NewIntro
@@ -521,10 +472,10 @@ func (g *Game) drawLevelSelect(screen *ebiten.Image) {
 
 		boxColor := color.RGBA{0x40, 0x40, 0x40, 0xFF}
 		levelNum := i + 1
-		if g.completedLevels[levelNum] {
+		if g.levelManager.completedLevels[levelNum] {
 			boxColor = color.RGBA{0x20, 0x60, 0x20, 0xFF}
 		}
-		if i == g.selectedLevelBox {
+		if i == g.levelManager.selectedLevelBox {
 			boxColor = color.RGBA{0x90, 0x90, 0x90, 0xFF}
 		}
 		ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxSize), float64(boxSize), boxColor)

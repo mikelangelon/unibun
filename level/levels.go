@@ -36,8 +36,8 @@ func NewIntro() *Level {
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
-	lvl.IntroText = "Your goal is to unite the buns with the patty,\nand deliver it to the client.\n" +
-		"Move with ← ↑ → ↓. Buns move 2 positions.\nPress Enter to continue"
+	lvl.IntroText = "Your goal is to unite the Buns with the Patty,\nand deliver it to the client.\n" +
+		"Buns move 2 positions.\nPress Enter to continue"
 
 	path1 := []image.Point{
 		{X: 15, Y: 7}, {X: 16, Y: 7}, {X: 17, Y: 7}, {X: 18, Y: 7}, {X: 19, Y: 7}, {X: 20, Y: 7}, {X: 21, Y: 7},
@@ -49,12 +49,12 @@ func NewIntro() *Level {
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(21, 1, config.BottomBun),
 		//entities.NewDashingFollowerEnemy(1, 13, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		//// entities.NewPidgeon(10, 10),
+		//// entities.NewPigeon(10, 10),
 		////entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
 		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
-		entities.NewPidgeon(4, 4),
-		entities.NewPidgeon(10, 6),
+		entities.NewPigeon(4, 4),
+		entities.NewPigeon(10, 6),
 		//entities.NewFollowerEnemy(10, 10, config.TopBun),
 		//entities.NewFollowerEnemy(3, 8, config.BottomBun),
 	}
@@ -71,7 +71,7 @@ func LettucePresentation() *Level {
 	lvl.Winning = []Position{
 		{X: 2, Y: 10},
 	}
-	lvl.IntroText = "If a bun unites with the Lettuce, \nit would be able to cross walls\n\nPress Enter to continue"
+	lvl.IntroText = "If a Bun unites with the Lettuce, \nit would be able to cross walls\n\nPress Enter to continue"
 	lvl.cells = [][]Cell{
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w, w, w},
@@ -105,7 +105,7 @@ func LettucePresentation() *Level {
 		entities.NewPlayer(13, 1, config.TopBun),
 		entities.NewPlayer(7, 9, config.BottomBun),
 		entities.NewPlayer(11, 3, config.Lettuce),
-		entities.NewPidgeon(10, 10),
+		entities.NewPigeon(10, 10),
 		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
 		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
 		entities.NewPathEnemy(path3[0].X, path3[0].Y, path3),
@@ -123,7 +123,7 @@ func CheesePresentation() *Level {
 	lvl.Winning = []Position{
 		{X: 4, Y: 13},
 	}
-	lvl.IntroText = "If a bun unites with cheese \nPress Z + direction to charge a dash next turn\n While dashing, it will kill enemies.\nPress Enter to continue"
+	lvl.IntroText = "If a Bun unites with Cheese \nPress Z + direction to charge a dash next turn\n While dashing, it will kill enemies.\nPress Enter to continue"
 	lvl.cells = [][]Cell{
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
@@ -329,7 +329,7 @@ func NewLevel1b() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(10, 5, config.BottomBun),
-		entities.NewPidgeon(10, 10),
+		entities.NewPigeon(10, 10),
 		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
 		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
 	}
@@ -372,7 +372,7 @@ func AnotherLettuce() *Level {
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(10, 6, config.BottomBun),
 		entities.NewPlayer(15, 8, config.Lettuce),
-		entities.NewPidgeon(10, 10),
+		entities.NewPigeon(10, 10),
 		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
 		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
 	}
@@ -577,13 +577,13 @@ func SnakesLevel() *Level {
 		entities.NewPlayer(1, 1, config.BottomBun),
 		entities.NewPlayer(23, 13, config.TopBun),
 		entities.NewDashingFollowerEnemy(1, 13, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPidgeon(10, 10),
+		// entities.NewPigeon(10, 10),
 		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
 		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
 		entities.NewDashingFollowerEnemy(12, 9, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
 		entities.NewDashingFollowerEnemy(12, 6, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPidgeon(10, 10),
+		// entities.NewPigeon(10, 10),
 		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
 	}
@@ -623,7 +623,7 @@ func FourSnakes() *Level {
 		entities.NewPlayer(5, 2, config.Lettuce),
 		entities.NewPlayer(19, 2, config.Cheese),
 		entities.NewDashingFollowerEnemy(1, 1, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPidgeon(10, 10),
+		// entities.NewPigeon(10, 10),
 		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
 		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
@@ -666,7 +666,7 @@ func FourSnakesReturn() *Level {
 		entities.NewPlayer(23, 13, config.Lettuce),
 		entities.NewPlayer(1, 13, config.Cheese),
 		entities.NewDashingFollowerEnemy(4, 2, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPidgeon(10, 10),
+		// entities.NewPigeon(10, 10),
 		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
 		entities.NewDashingFollowerEnemy(20, 2, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
@@ -711,7 +711,7 @@ func NewEmptyLevel() *Level {
 		//entities.NewPlayer(2, 1, config.Cheese),
 		//entities.NewPlayer(2, 2, config.Lettuce),
 		entities.NewDashingFollowerEnemy(1, 13, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPidgeon(10, 10),
+		// entities.NewPigeon(10, 10),
 		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
 	}
@@ -749,7 +749,7 @@ func FirstRealLevel() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(10, 5, config.BottomBun),
-		entities.NewPidgeon(11, 6),
+		entities.NewPigeon(11, 6),
 		entities.NewFollowerEnemy(1, 9, config.TopBun),
 		entities.NewFollowerEnemy(16, 1, config.BottomBun),
 		entities.NewDashingFollowerEnemy(18, 4, config.BottomBun, 4),
@@ -786,7 +786,7 @@ func AvoidTheLettuce() *Level {
 		entities.NewPlayer(10, 10, config.TopBun),
 		entities.NewPlayer(1, 13, config.BottomBun),
 		entities.NewPlayer(10, 12, config.Lettuce),
-		entities.NewPidgeon(1, 1),
+		entities.NewPigeon(1, 1),
 	}
 	return lvl
 }
@@ -820,9 +820,9 @@ func PuzzleBuns() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(1, 1, config.TopBun),
 		entities.NewPlayer(1, 13, config.BottomBun),
-		entities.NewPidgeon(6, 2),
-		entities.NewPidgeon(18, 12),
-		entities.NewPidgeon(20, 5),
+		entities.NewPigeon(6, 2),
+		entities.NewPigeon(18, 12),
+		entities.NewPigeon(20, 5),
 	}
 	return lvl
 }
@@ -869,9 +869,9 @@ func NewLevel4() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(23, 1, config.TopBun),     // Top-right start
 		entities.NewPlayer(23, 13, config.BottomBun), // Bottom-right start
-		entities.NewPidgeon(5, 5),                    // Guarding a path in the top-left area
-		entities.NewPidgeon(10, 7),                   // Near the burger patty
-		entities.NewPidgeon(17, 9),                   // Patrolling a corridor in the mid-right area
+		entities.NewPigeon(5, 5),                     // Guarding a path in the top-left area
+		entities.NewPigeon(10, 7),                    // Near the burger patty
+		entities.NewPigeon(17, 9),                    // Patrolling a corridor in the mid-right area
 	}
 	return lvl
 }

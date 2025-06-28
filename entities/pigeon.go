@@ -11,7 +11,7 @@ type Pigeon struct {
 	*Enemy
 }
 
-func NewPidgeon(startX, startY int) *Pigeon {
+func NewPigeon(startX, startY int) *Pigeon {
 	return &Pigeon{
 		Enemy: NewEnemy(startX, startY, []*ebiten.Image{common.GetImage(assets.Pidgeon)}),
 	}
