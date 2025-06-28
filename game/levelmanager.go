@@ -41,7 +41,7 @@ func newLevelManager(startLevelFunc func(levelNum int)) *levelManager {
 			12: level.NewLevelLettuceMaze,
 			13: level.AnotherLettuce,
 			14: level.NewLevelLettuceMazeHard,
-			15: level.NewEmptyLevel,
+			15: level.SnakesLevel,
 			16: level.Unite,
 		},
 	}
