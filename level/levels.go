@@ -37,7 +37,7 @@ func NewIntro() *Level {
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
 	lvl.IntroText = "Your goal is to unite the Buns with the Patty,\nand deliver it to the client.\n" +
-		"Buns move 2 positions.\nPress Enter to continue"
+		"Buns move 2 positions.\n\n\n\nPress Enter to continue"
 
 	path1 := []image.Point{
 		{X: 15, Y: 7}, {X: 16, Y: 7}, {X: 17, Y: 7}, {X: 18, Y: 7}, {X: 19, Y: 7}, {X: 20, Y: 7}, {X: 21, Y: 7},
@@ -71,7 +71,7 @@ func LettucePresentation() *Level {
 	lvl.Winning = []Position{
 		{X: 2, Y: 10},
 	}
-	lvl.IntroText = "If a Bun unites with the Lettuce, \nit would be able to cross walls\n\nPress Enter to continue"
+	lvl.IntroText = "If a Bun unites with the Lettuce, \nit would be able to cross walls\n\n\n\n\nPress Enter to continue"
 	lvl.cells = [][]Cell{
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w, w, w},
@@ -123,7 +123,7 @@ func CheesePresentation() *Level {
 	lvl.Winning = []Position{
 		{X: 4, Y: 13},
 	}
-	lvl.IntroText = "If a Bun unites with Cheese \nPress Z + direction to charge a dash next turn\n While dashing, it will kill enemies.\nPress Enter to continue"
+	lvl.IntroText = "If a Bun unites with Cheese \nPress Z + direction to charge a dash next turn\n While dashing, it will kill enemies.\n\n\n\nPress Enter to continue"
 	lvl.cells = [][]Cell{
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
@@ -834,9 +834,16 @@ func newLevel() *Level {
 		Winning: []Position{
 			{X: 1, Y: 1},
 		},
-		WinningImg:   common.GetImage(assets.Client),
-		FloorTileImg: []*ebiten.Image{common.GetImage(assets.FloorTile), common.GetImage(assets.FloorTileB), common.GetImage(assets.FloorTileC)},
-		pulseOffset:  0,
+		WinningImg: common.GetImage(assets.Client),
+		FloorTileImg: []*ebiten.Image{
+			common.GetImage(assets.FloorTile),
+			common.GetImage(assets.FloorTileB),
+			common.GetImage(assets.FloorTileC),
+			common.GetImage(assets.FloorTileD),
+			common.GetImage(assets.FloorTileE),
+			common.GetImage(assets.FloorTileF),
+		},
+		pulseOffset: 0,
 	}
 }
 

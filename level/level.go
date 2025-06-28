@@ -24,7 +24,7 @@ type Level struct {
 }
 
 func (l *Level) getRandomTile() *ebiten.Image {
-	defaultTileProb := 20
+	defaultTileProb := 25
 	r := rand.IntN(defaultTileProb + len(l.FloorTileImg))
 	if r < defaultTileProb {
 		return l.FloorTileImg[0]

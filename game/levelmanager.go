@@ -20,7 +20,7 @@ func newLevelManager(startLevelFunc func(levelNum int)) *levelManager {
 		completedLevels:  make(map[int]bool),
 		selectedLevelBox: 0,
 		levelConstructors: map[int]func() *level.Level{
-			1:  level.NewEmptyLevel, //level.NewIntro,
+			1:  level.NewIntro,
 			2:  level.LettucePresentation,
 			3:  level.CheesePresentation,
 			4:  level.FirstRealLevel,

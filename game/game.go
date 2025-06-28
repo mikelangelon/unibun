@@ -1,7 +1,6 @@
 package game
 
 import (
-	"bytes"
 	"fmt"
 	"image"
 	"image/color"
@@ -14,7 +13,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mikelangelon/unibun/assets"
+
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 	"github.com/mikelangelon/unibun/level"
@@ -38,10 +37,8 @@ type Game struct {
 
 	// Menu related fields
 	currentGameState        GameState
-	menuBackground          *ebiten.Image
-	menuOptions             []MenuOption
-	selectedMenuOption      int
-	pauseMenuOptions        []MenuOption
+	menu                    *menu
+	pauseMenuOptions        []menuOption
 	selectedPauseMenuOption int
 
 	resetTimer int
@@ -66,13 +63,7 @@ func NewGame() *Game {
 	g := Game{}
 	// init audios
 	g.audios, _ = newAudios()
-	img, _, err := image.Decode(bytes.NewReader(assets.MenuBackground))
-	if err != nil {
-		slog.Error("failed to decode menu background", "error", err)
-	}
-	g.menuBackground = ebiten.NewImageFromImage(img)
-
-	g.initMenu()
+	g.menu = newMenu()
 	g.initPauseMenu()
 	g.levelManager = newLevelManager(g.startLevel)
 	g.currentGameState = StateMenu
@@ -86,23 +77,23 @@ func NewGame() *Game {
 }
 
 func (g *Game) initPauseMenu() {
-	g.pauseMenuOptions = []MenuOption{
+	g.pauseMenuOptions = []menuOption{
 		{
-			Text: "Continue",
-			Action: func(game *Game) {
+			text: "Continue",
+			action: func(game *Game) {
 				game.currentGameState = game.stateBeforePause
 			},
 		},
 		{
-			Text: "Restart",
-			Action: func(game *Game) {
+			text: "Restart",
+			action: func(game *Game) {
 				game.Reset()
 				game.currentGameState = game.stateBeforePause
 			},
 		},
 		{
-			Text: "Menu",
-			Action: func(game *Game) {
+			text: "Menu",
+			action: func(game *Game) {
 				game.currentGameState = StateMenu
 			},
 		},
@@ -114,7 +105,7 @@ func (g *Game) initPauseMenu() {
 
 	for i := range g.pauseMenuOptions {
 		option := &g.pauseMenuOptions[i]
-		option.Rect = image.Rect(
+		option.rect = image.Rect(
 			centerX-config.MenuOptionWidth/2,
 			startY+i*(config.MenuOptionHeight+config.MenuOptionSpacing),
 			centerX+config.MenuOptionWidth/2,
@@ -131,7 +122,7 @@ func (g *Game) Update() error {
 
 	switch g.currentGameState {
 	case StateMenu:
-		return g.updateMenu()
+		return g.menu.updateMenu(g)
 	case StatePlaying, StateEndless:
 		return g.updatePlaying()
 	case StateLevelSelect:
@@ -197,7 +188,7 @@ func (g *Game) updatePaused() error {
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		g.pauseMenuOptions[g.selectedPauseMenuOption].Action(g)
+		g.pauseMenuOptions[g.selectedPauseMenuOption].action(g)
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
@@ -430,8 +421,8 @@ func (g *Game) drawIntro(screen *ebiten.Image) {
 	boxWidth := 400
 	boxHeight := 150
 	boxX := (config.WindowWidth - boxWidth) / 2
-	boxY := (config.WindowHeight - boxHeight) / 2
-	boxColor := color.RGBA{0x20, 0x20, 0x20, 80}
+	boxY := (config.WindowHeight-boxHeight)/2 + 100
+	boxColor := color.RGBA{40, 40, 40, 200}
 	ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxWidth), float64(boxHeight), boxColor)
 
 	introText := g.currentLevel().IntroText
@@ -657,7 +648,7 @@ func (g *Game) lettucePower(bun, lettuce *entities.Player) {
 func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.currentGameState {
 	case StateMenu:
-		g.drawMenu(screen)
+		g.menu.drawMenu(screen)
 	case StateLevelSelect:
 		g.drawLevelSelect(screen)
 	case StateTutorial:
@@ -681,13 +672,13 @@ func (g *Game) drawPaused(screen *ebiten.Image) {
 		if i == g.selectedPauseMenuOption {
 			btnColor = color.RGBA{0x80, 0x80, 0x80, 0xFF}
 		}
-		ebitenutil.DrawRect(screen, float64(option.Rect.Min.X), float64(option.Rect.Min.Y), float64(option.Rect.Dx()), float64(option.Rect.Dy()), btnColor)
+		ebitenutil.DrawRect(screen, float64(option.rect.Min.X), float64(option.rect.Min.Y), float64(option.rect.Dx()), float64(option.rect.Dy()), btnColor)
 
 		charWidth := 6
 		charHeight := 16
-		textX := option.Rect.Min.X + (option.Rect.Dx()-len(option.Text)*charWidth)/2
-		textY := option.Rect.Min.Y + (option.Rect.Dy()-charHeight)/2
-		ebitenutil.DebugPrintAt(screen, option.Text, textX, textY)
+		textX := option.rect.Min.X + (option.rect.Dx()-len(option.text)*charWidth)/2
+		textY := option.rect.Min.Y + (option.rect.Dy()-charHeight)/2
+		ebitenutil.DebugPrintAt(screen, option.text, textX, textY)
 	}
 }
 

@@ -32,8 +32,6 @@ var (
 	Snake []byte
 	//go:embed duck.png
 	Duck []byte
-	//go:embed cat.png
-	Cat []byte
 	//go:embed fly.png
 	Fly []byte
 	//go:embed fly2.png
@@ -41,16 +39,19 @@ var (
 	//go:embed fly3.png
 	Fly3 []byte
 
-	//go:embed tile2.png
+	//go:embed tile1.png
 	FloorTile []byte
-
-	//go:embed tile2b.png
+	//go:embed tile2.png
 	FloorTileB []byte
-
-	//go:embed tile2c.png
+	//go:embed tile3.png
 	FloorTileC []byte
-
-	//go:embed menu2.png
+	//go:embed tile4.png
+	FloorTileD []byte
+	//go:embed tile5.png
+	FloorTileE []byte
+	//go:embed tile6.png
+	FloorTileF []byte
+	//go:embed menu.png
 	MenuBackground []byte
 
 	/**
