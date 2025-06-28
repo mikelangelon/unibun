@@ -80,7 +80,7 @@ func (p *Player) Draw(screen *ebiten.Image) {
 		op.ColorScale.Scale(1.5, 1.8, 0.5, 0.8)
 	}
 	if p.IsActiveTurn {
-		brightness := 1.25 + 0.25*math.Sin(p.pulseOffset/15.0)
+		brightness := 1.25 + 0.25*math.Sin(p.pulseOffset/11.0)
 		op.ColorScale.Scale(float32(brightness), float32(brightness), float32(brightness), 1.0)
 		p.pulseOffset++
 	}

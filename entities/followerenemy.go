@@ -33,26 +33,27 @@ func (fe *FollowerEnemy) SetTarget(x, y int) {
 func (fe *FollowerEnemy) Update(level Level) bool {
 	if fe.targetX == -1 || fe.targetY == -1 {
 		// Move random if there is no target
-		fe.gridX, fe.gridY = nextRandomMove(level, &Enemy{})
+		fe.gridX, fe.gridY = nextRandomMove(level, fe.Enemy)
 		return true
 	}
 
 	currentX, currentY := fe.gridX, fe.gridY
 
+	newX, newY := currentX, currentY
 	// Try to reduce distance to the target
 	if fe.targetX != currentX {
 		nextX := currentX + int(math.Copysign(1, float64(fe.targetX-currentX)))
 		if level.IsWalkable(nextX, currentY) {
-			fe.gridX = nextX
+			newX = nextX
 		}
 	} else if fe.targetY != currentY {
 		nextY := currentY + int(math.Copysign(1, float64(fe.targetY-currentY)))
 		if level.IsWalkable(currentX, nextY) {
-			fe.gridY = nextY
+			newY = nextY
 		}
 	}
 
-	return true
+	return updatePosDirection(fe.Enemy, currentX, newX, newY)
 }
 
 func (fe *FollowerEnemy) Reset() {
