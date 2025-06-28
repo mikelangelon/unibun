@@ -49,6 +49,7 @@ func newLevelManager(startLevelFunc func(levelNum int)) *levelManager {
 
 func (l *levelManager) Update() error {
 	cols := 5
+	// The secret game is displayed different than the rest.
 	if l.selectedLevelBox < numRegularLevels {
 		if inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) && (l.selectedLevelBox+1)%cols != 0 && l.selectedLevelBox < numRegularLevels-1 {
 			l.selectedLevelBox++

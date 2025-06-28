@@ -2,12 +2,13 @@ package game
 
 import (
 	"fmt"
+	"image/color"
+	"strings"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
-	"image/color"
-	"strings"
 )
 
 // Constants for Turn Order UI
@@ -61,6 +62,8 @@ func (g *Game) drawGameComplete(screen *ebiten.Image) {
 	prompt := " --> Press Enter to return to the Main Menu"
 	promptX := paddingLeft
 	ebitenutil.DebugPrintAt(screen, prompt, promptX, 330)
+
+	g.drawEffects(screen)
 }
 
 func (g *Game) drawGameOver(screen *ebiten.Image) {

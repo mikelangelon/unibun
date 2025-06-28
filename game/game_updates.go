@@ -1,11 +1,13 @@
 package game
 
 import (
+	"math/rand/v2"
+	"os"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
-	"os"
 )
 
 func (g *Game) Update() error {
@@ -48,6 +50,16 @@ func (g *Game) updateGameComplete() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		g.currentGameState = StateMenu
 	}
+	g.gameCompleteConfettiTimer--
+	if g.gameCompleteConfettiTimer <= 0 {
+		g.gameCompleteConfettiTimer = 10
+		x := rand.IntN(config.WindowWidth / config.TileSize)
+		y := rand.IntN(config.WindowHeight / config.TileSize)
+		g.animationManager.playConfettiEffect(x, y)
+	}
+
+	g.updateEffects()
+
 	return nil
 }
 
@@ -233,12 +245,13 @@ func (g *Game) updateWinAnimation() {
 	if !g.animationManager.isWinningPlaying() {
 		if g.currentGameState == StateEndless {
 			g.currentEndlessLevel++
-			g.startEndlessGame() // This reloads the endless mode
+			g.startEndlessGame() // Reloads the endless mode.
 		} else {
-			g.levelManager.passNextLevel() // Mark level as complete
-			// If we just beat the secret level (16), show the final win screen.
-			// Otherwise, go back to the select screen to reveal the secret level.
-			if g.levelManager.currentLevelIndex == 16 {
+			// Marks level as complete.
+			g.levelManager.passNextLevel()
+			// If the player just beat the secret level (16), it shows the celebration screen and ends the game.
+			// Otherwise, it goes back to the select screen to reveal the secret level.
+			if len(g.levelManager.completedLevels) == 16 {
 				g.currentGameState = StateGameComplete
 			} else {
 				g.currentGameState = StateLevelSelect

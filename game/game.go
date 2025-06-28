@@ -1,13 +1,14 @@
 package game
 
 import (
+	"image"
+	"log"
+	"log/slog"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/config"
 	"github.com/mikelangelon/unibun/entities"
 	"github.com/mikelangelon/unibun/level"
-	"image"
-	"log"
-	"log/slog"
 )
 
 type Game struct {
@@ -41,7 +42,8 @@ type Game struct {
 	animationManager *animationManager
 
 	// To select level
-	levelManager *levelManager
+	levelManager              *levelManager
+	gameCompleteConfettiTimer int
 }
 
 type character interface {
@@ -63,6 +65,7 @@ func NewGame() *Game {
 	g.resetTimer = 0
 	g.animationManager = newAnimationManager()
 	g.introDelayTimer = 0
+	g.gameCompleteConfettiTimer = 0
 
 	return &g
 }

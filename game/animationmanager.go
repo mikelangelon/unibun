@@ -43,6 +43,10 @@ func (a *animationManager) playWinningAnimation(x, y int) {
 	a.winningAnimation.Confetti = entities.CreateConfetti(x, y)
 }
 
+func (a *animationManager) playConfettiEffect(x, y int) {
+	a.effects = append(a.effects, entities.CreateConfetti(x, y))
+}
+
 func (a *animationManager) playKillEffect(x, y int) {
 	a.effects = append(a.effects, entities.CreateBlood(x, y))
 }
