@@ -1,11 +1,12 @@
 package entities
 
 import (
+	"image"
+	"log/slog"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/common"
-	"image"
-	"log/slog"
 )
 
 type PathEnemy struct {
@@ -35,6 +36,7 @@ func NewPathEnemy(startX, startY int, path []image.Point) *PathEnemy {
 		currentPathIndex: 0,
 		pathDirection:    1,
 		initialPathIndex: 0,
+		initialDirection: 1,
 	}
 }
 
@@ -46,6 +48,9 @@ func (e *PathEnemy) Reset() {
 }
 
 func (e *PathEnemy) Update(_ Level) bool {
+	if len(e.path) <= 1 {
+		return true
+	}
 	oldX := e.gridX
 	newX, newY := e.followPath()
 	return updatePosDirection(e.Enemy, oldX, newX, newY)

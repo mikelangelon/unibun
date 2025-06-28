@@ -56,6 +56,7 @@ type Game struct {
 	// To select level
 	levelConstructors map[int]func() *level.Level
 	selectedLevelBox  int
+	completedLevels   map[int]bool
 }
 
 type character interface {
@@ -67,20 +68,17 @@ type character interface {
 func NewGame() *Game {
 	g := Game{}
 	// init audios
-	a, err := newAudios()
-	if err != nil {
-		log.Fatal(err)
-	}
-	g.audios = a
+	g.audios, _ = newAudios()
 	img, _, err := image.Decode(bytes.NewReader(assets.MenuBackground))
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed to decode menu background", "error", err)
 	}
 	g.menuBackground = ebiten.NewImageFromImage(img)
 
 	g.initMenu()
 	g.initPauseMenu()
 	g.initLevelConstructors()
+	g.completedLevels = make(map[int]bool)
 	g.currentGameState = StateMenu
 	g.selectedLevelBox = 0
 	g.previousGameState = -1
@@ -106,7 +104,7 @@ func (g *Game) initLevelConstructors() {
 		12: level.NewLevelLettuceMaze,
 		13: level.AnotherLettuce,
 		14: level.NewLevelLettuceMazeHard,
-		15: level.SnakesLevel, // A bit too difficult?
+		15: level.SnakesLevel,
 	}
 }
 
@@ -163,6 +161,8 @@ func (g *Game) Update() error {
 		return g.updateLevelSelect()
 	case StateIntro:
 		return g.updateIntro()
+	case StateTutorial:
+		return g.updateTutorial()
 	case StatePaused:
 		return g.updatePaused()
 	case StateExiting:
@@ -188,7 +188,7 @@ func (g *Game) handleGameStateChange() {
 	g.audios.mainMusicPlayer.Pause()
 
 	switch g.currentGameState {
-	case StateMenu, StateLevelSelect:
+	case StateMenu, StateLevelSelect, StateTutorial:
 		g.audios.menuMusicPlayer.Rewind()
 		g.audios.menuMusicPlayer.Play()
 	case StateIntro, StatePlaying, StateEndless:
@@ -215,6 +215,13 @@ func (g *Game) updateLevelSelect() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		g.currentLevelIndex = g.selectedLevelBox + 1
 		g.startLevel(g.currentLevelIndex)
+	}
+	return nil
+}
+
+func (g *Game) updateTutorial() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		g.currentGameState = StateMenu
 	}
 	return nil
 }
@@ -422,8 +429,13 @@ func (g *Game) updateWinAnimation() {
 			g.currentEndlessLevel++
 			g.startEndlessGame() // This reloads the endless mode
 		} else {
-			g.increaseLevel()
-			g.startLevel(g.currentLevelIndex)
+			if g.currentLevelIndex > 0 {
+				g.completedLevels[g.currentLevelIndex] = true
+			}
+			if g.currentLevelIndex < len(g.levelConstructors)-1 {
+				g.selectedLevelBox = g.currentLevelIndex
+			}
+			g.currentGameState = StateLevelSelect
 		}
 	}
 }
@@ -431,7 +443,7 @@ func (g *Game) updateWinAnimation() {
 func (g *Game) startLevel(levelNum int) {
 	constructor, ok := g.levelConstructors[levelNum]
 	if !ok {
-		// Plan B for now
+		// All filled, this should not happen
 		constructor = level.NewIntro
 	}
 	g.level = constructor()
@@ -508,12 +520,16 @@ func (g *Game) drawLevelSelect(screen *ebiten.Image) {
 		boxY := startY + row*(boxSize+padding)
 
 		boxColor := color.RGBA{0x40, 0x40, 0x40, 0xFF}
+		levelNum := i + 1
+		if g.completedLevels[levelNum] {
+			boxColor = color.RGBA{0x20, 0x60, 0x20, 0xFF}
+		}
 		if i == g.selectedLevelBox {
 			boxColor = color.RGBA{0x90, 0x90, 0x90, 0xFF}
 		}
 		ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxSize), float64(boxSize), boxColor)
 
-		levelNumStr := fmt.Sprintf("%d", i+1)
+		levelNumStr := fmt.Sprintf("%d", levelNum)
 		textX := boxX + (boxSize-len(levelNumStr)*6)/2
 		textY := boxY + (boxSize-16)/2
 		ebitenutil.DebugPrintAt(screen, levelNumStr, textX, textY)
@@ -687,19 +703,14 @@ func (g *Game) lettucePower(bun, lettuce *entities.Player) {
 	g.turnManager.turnOrderDisplay = newTurnOrder
 }
 
-func (g *Game) increaseLevel() {
-	if g.currentLevelIndex >= 15 {
-		// TODO Show an ending
-	}
-	g.currentLevelIndex++
-	g.status = Playing
-}
 func (g *Game) Draw(screen *ebiten.Image) {
 	switch g.currentGameState {
 	case StateMenu:
 		g.drawMenu(screen)
 	case StateLevelSelect:
 		g.drawLevelSelect(screen)
+	case StateTutorial:
+		drawTutorial(screen)
 	case StatePlaying, StateEndless, StatePaused, StateIntro:
 		g.drawPlaying(screen)
 		if g.currentGameState == StateIntro {

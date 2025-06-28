@@ -10,4 +10,5 @@ const (
 	StatePaused
 	StateIntro
 	StateLevelSelect
+	StateTutorial
 )

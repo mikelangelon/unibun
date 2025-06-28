@@ -69,7 +69,7 @@ func LettucePresentation() *Level {
 	lvl := newLevel()
 	lvl.BurgerPatty = entities.NewBurgerPatty(11, 6)
 	lvl.Winning = []Position{
-		{X: 11, Y: 10},
+		{X: 2, Y: 10},
 	}
 	lvl.IntroText = "If a bun unites with the Lettuce, \nit would be able to cross walls\n\nPress Enter to continue"
 	lvl.cells = [][]Cell{
@@ -79,29 +79,37 @@ func LettucePresentation() *Level {
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, c, c, c, c, c, c, c, c, w, w, w, w, w, c, c, c, c, c, c, c, c, w, w, w},
 		{w, c, c, c, c, c, c, c, c, w, w, w, w, w, c, c, c, c, c, c, c, c, w, w, w},
-		{w, c, c, c, c, c, c, c, c, w, w, c, w, w, c, c, c, c, c, c, c, c, w, w, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+		{w, w, w, w, w, w, w, c, c, w, w, c, w, w, c, c, c, c, c, c, c, c, w, w, w},
+		{w, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
 	path1 := []image.Point{
-		{X: 5, Y: 3}, {X: 5, Y: 4}, {X: 5, Y: 5}, {X: 5, Y: 6}, {X: 5, Y: 7},
+		{X: 7, Y: 1}, {X: 7, Y: 2}, {X: 7, Y: 3}, {X: 7, Y: 4}, {X: 7, Y: 5}, {X: 7, Y: 6}, {X: 7, Y: 7}, {X: 7, Y: 8}, {X: 7, Y: 9},
 	}
 	path2 := []image.Point{
 		{X: 11, Y: 7}, {X: 12, Y: 7}, {X: 13, Y: 7}, {X: 14, Y: 7},
 	}
+	path3 := []image.Point{
+		{X: 5, Y: 7}, {X: 5, Y: 8}, {X: 5, Y: 9}, {X: 5, Y: 10},
+	}
+	path4 := []image.Point{
+		{X: 1, Y: 7}, {X: 2, Y: 7}, {X: 3, Y: 7}, {X: 4, Y: 7}, {X: 5, Y: 7},
+	}
 	lvl.TurnOrderPattern = []interface{}{
-		entities.NewPlayer(11, 1, config.TopBun),
-		entities.NewPlayer(5, 8, config.BottomBun),
+		entities.NewPlayer(13, 1, config.TopBun),
+		entities.NewPlayer(7, 9, config.BottomBun),
 		entities.NewPlayer(11, 3, config.Lettuce),
 		entities.NewPidgeon(10, 10),
 		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
 		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
+		entities.NewPathEnemy(path3[0].X, path3[0].Y, path3),
+		entities.NewPathEnemy(path4[0].X, path4[0].Y, path4),
 	}
 	return lvl
 }
@@ -446,15 +454,15 @@ func NewLevelLettuceMazeHard() *Level {
 		{w, w, c, w, w, c, w, c, c, c, c, c, c, c, c, c, c, c, w, w, c, w, c, w, w},
 		{w, c, c, c, c, c, c, c, w, w, w, w, w, c, w, w, w, w, w, w, c, c, c, c, w},
 		{w, c, w, w, w, w, w, c, c, c, c, w, w, c, w, w, w, w, w, w, w, w, w, c, w},
-		{w, c, w, w, w, w, w, c, w, w, c, w, w, c, c, c, c, c, c, w, w, w, w, c, w},
-		{w, c, c, c, c, c, c, c, w, w, c, c, c, c, w, w, w, w, c, c, c, c, c, c, w},
+		{w, c, w, w, w, w, w, c, w, w, c, w, w, c, w, w, c, c, c, w, w, w, w, c, w},
+		{w, c, c, c, c, c, c, c, w, w, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
 	path1 := []image.Point{
 		{X: 7, Y: 11}, {X: 8, Y: 11}, {X: 9, Y: 11}, {X: 10, Y: 11},
 	}
 	path2 := []image.Point{
-		{X: 10, Y: 13}, {X: 11, Y: 13}, {X: 12, Y: 13}, {X: 13, Y: 13},
+		{X: 10, Y: 13}, {X: 11, Y: 13}, {X: 12, Y: 13}, {X: 13, Y: 13}, {X: 14, Y: 13}, {X: 15, Y: 13},
 	}
 	path3 := []image.Point{
 		{X: 8, Y: 6}, {X: 9, Y: 6}, {X: 10, Y: 6}, {X: 11, Y: 6}, {X: 12, Y: 6},
@@ -810,11 +818,11 @@ func PuzzleBuns() *Level {
 	}
 
 	lvl.TurnOrderPattern = []interface{}{
-		entities.NewPlayer(1, 1, config.TopBun),     // Top-left start
-		entities.NewPlayer(1, 13, config.BottomBun), // Bottom-left start
-		entities.NewPidgeon(6, 2),                   // Pigeon in the upper section
-		entities.NewPidgeon(18, 12),                 // Pigeon in the lower-right section
-		entities.NewPidgeon(12, 4),                  // Pigeon guarding near a path to burger
+		entities.NewPlayer(1, 1, config.TopBun),
+		entities.NewPlayer(1, 13, config.BottomBun),
+		entities.NewPidgeon(6, 2),
+		entities.NewPidgeon(18, 12),
+		entities.NewPidgeon(20, 5),
 	}
 	return lvl
 }

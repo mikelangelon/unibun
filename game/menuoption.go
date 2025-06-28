@@ -35,9 +35,9 @@ func (g *Game) initMenu() {
 			},
 		},
 		{
-			Text: "Exit",
+			Text: "Tutorial",
 			Action: func(game *Game) {
-				game.currentGameState = StateExiting
+				game.currentGameState = StateTutorial
 			},
 		},
 	}
