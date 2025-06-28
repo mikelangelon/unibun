@@ -1,12 +1,10 @@
 package game
 
 import (
-	"bytes"
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/common"
 	"image"
 	"image/color"
-	"log/slog"
 	"math/rand/v2"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -23,6 +21,8 @@ type menuOption struct {
 
 type menu struct {
 	menuBackground     *ebiten.Image
+	jam2025            *ebiten.Image
+	jamTheme           *ebiten.Image
 	menuOptions        []*menuOption
 	selectedMenuOption int
 	fallingIngredients []*fallingIngredient
@@ -53,12 +53,10 @@ type fallingIngredient struct {
 func newMenu() *menu {
 	centerX := 467
 	startY := 400
-	img, _, err := image.Decode(bytes.NewReader(assets.MenuBackground))
-	if err != nil {
-		slog.Error("failed to decode menu background", "error", err)
-	}
 	m := &menu{
-		menuBackground: ebiten.NewImageFromImage(img),
+		menuBackground: common.GetImage(assets.MenuBackground),
+		jam2025:        common.GetImage(assets.Jam2025),
+		jamTheme:       common.GetImage(assets.JamTheme),
 		ingredientImages: []*ebiten.Image{
 			common.GetImage(assets.TopBun),
 			common.GetImage(assets.BottomBun),
@@ -153,6 +151,17 @@ func (m *menu) drawMenu(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(0.6, 0.6)
 	screen.DrawImage(m.menuBackground, op)
+
+	op2 := &ebiten.DrawImageOptions{}
+	op2.GeoM.Scale(0.05, 0.05)
+	op2.GeoM.Translate(50, 20)
+	screen.DrawImage(m.jam2025, op2)
+
+	op3 := &ebiten.DrawImageOptions{}
+	op3.GeoM.Scale(0.1, 0.1)
+	op3.GeoM.Translate(100, 90)
+	ebitenutil.DebugPrintAt(screen, "Theme: UNITE", 100, 70)
+	screen.DrawImage(m.jamTheme, op3)
 
 	for i, option := range m.menuOptions {
 		btnColor := color.RGBA{0x40, 0x40, 0x40, 0xFF}

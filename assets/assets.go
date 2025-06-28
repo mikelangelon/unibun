@@ -54,6 +54,11 @@ var (
 	//go:embed menu.png
 	MenuBackground []byte
 
+	//go:embed jamTheme.png
+	JamTheme []byte
+	//go:embed jam2025.png
+	Jam2025 []byte
+
 	/**
 	Sounds
 	*/

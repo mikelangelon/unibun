@@ -13,9 +13,9 @@ The plan:
 - [x] Move around something
 - [x] Turn base
   - [x] Make more obvious the turn (flashing)
-- [ ] Sokoban style of moving around and pushing stuff
+  - [x] Make obvious goal (glowing & growing)
 - [x] Allow to push patty
-  - [ ] Allow to push other objects
+  - [ ] Sokoban style of moving around and pushing stuff
 - [ ] Goal: 
   - [x] Merge as one
   - [x] Bring it to a winning position
@@ -23,6 +23,7 @@ The plan:
 - [x] Different ingredients? Cheese, Lettuce, Bacon...
   - [x] Cheese --> make bun faster
   - [x] Lettuce --> cross walls
+    - [ ] Avoid going outside the screen 
   - [ ] Bacon --> ??
 - [ ] Enemies?
   - [x] Pidgeon --> random move
@@ -30,13 +31,16 @@ The plan:
   - [x] Duck --> follows target
   - [x] Snake --> follow target + dash --> a bit buggy
   - [x] Fly --> follows patty
-  - [x] Cat --> just... stays
   - [ ] Animate characters
+    - [x] Fly
+    - [ ] Others
 - [x] Pass to next level
 - [x] Sounds
 - [x] Music
 - [ ] Endless mode
 - [X] Show all levels individually
+- [ ] Replace all DebugPrintAt by a proper Text
+- [ ] Dash should not pass above patty.
 
 ## Packages
 - Game --> Main game with all the logic

@@ -6,39 +6,40 @@ import (
 )
 
 const (
-	shakeDefaultDuration  = 30 //0.5 seconds at 60FPS
+	shakeDefaultDuration  = 30
 	shakeDefaultMagnitude = 4.0
 )
 
-type Shake struct {
-	shakeTimer     int     // Timer to define when the shake is completed
-	shakeMagnitude float64 // Max pixel offset for the current shake
-	shakeOffsetX   float64 // Current random X offset for this frame
-	shakeOffsetY   float64 // Current random Y offset for this frame
+// shake contains the params for the shake effect
+type shake struct {
+	timer     int
+	magnitude float64
+	offsetX   float64
+	offsetY   float64
 }
 
-func newShake(durationFrames int, magnitude float64) *Shake {
-	return &Shake{
-		shakeTimer:     durationFrames,
-		shakeMagnitude: magnitude,
-		shakeOffsetX:   0,
-		shakeOffsetY:   0,
+func newShake(durationFrames int, magnitude float64) *shake {
+	return &shake{
+		timer:     durationFrames,
+		magnitude: magnitude,
+		offsetX:   0,
+		offsetY:   0,
 	}
 }
 
-func (s *Shake) Update() {
-	s.shakeTimer--
-	if s.shakeTimer <= 0 {
+func (s *shake) Update() {
+	s.timer--
+	if s.timer <= 0 {
 		// it nils itself and leaves
 		s = nil
 		return
 	} else {
 		// Generate random offsets
-		s.shakeOffsetX = (rand.Float64()*2 - 1) * s.shakeMagnitude
-		s.shakeOffsetY = (rand.Float64()*2 - 1) * s.shakeMagnitude
+		s.offsetX = (rand.Float64()*2 - 1) * s.magnitude
+		s.offsetY = (rand.Float64()*2 - 1) * s.magnitude
 	}
 }
 
-func (s Shake) shake(op *ebiten.DrawImageOptions) {
-	op.GeoM.Translate(s.shakeOffsetX, s.shakeOffsetY)
+func (s shake) shake(op *ebiten.DrawImageOptions) {
+	op.GeoM.Translate(s.offsetX, s.offsetY)
 }

@@ -32,6 +32,7 @@ type Player struct {
 
 type Level interface {
 	IsWalkable(gridX, gridY int) bool
+	OutOfBounds(gridX, gridY int) bool
 }
 
 func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
@@ -150,7 +151,7 @@ func (p *Player) CalculateMovePath(level Level, dx, dy int) []image.Point {
 	for i := 1; i <= p.Speed; i++ {
 		nextX, nextY := p.GridX+dx*i, p.GridY+dy*i
 
-		if p.CanWalkThroughWalls {
+		if p.CanWalkThroughWalls && !level.OutOfBounds(nextX, nextY) {
 			path = append(path, image.Point{X: nextX, Y: nextY})
 			continue
 		}

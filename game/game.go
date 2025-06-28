@@ -30,7 +30,7 @@ type Game struct {
 
 	// TODO Maybe is not needed? Use status instead?
 	needsRestart bool
-	shake        *Shake
+	shake        *shake
 	// delays
 	enemyTurnDelayTimer int
 	introDelayTimer     int
@@ -161,8 +161,8 @@ func (g *Game) handleGameStateChange() {
 		g.audios.menuMusicPlayer.Play()
 	case StateIntro, StatePlaying, StateEndless:
 		g.introDelayTimer = 10
-		g.audios.menuMusicPlayer.Rewind()
-		g.audios.menuMusicPlayer.Play()
+		g.audios.mainMusicPlayer.Rewind()
+		g.audios.mainMusicPlayer.Play()
 	}
 }
 
@@ -256,6 +256,7 @@ func (g *Game) updatePlaying() error {
 		if actor.IsDashing() {
 			actor.Update(g.currentLevel())
 			g.checkCollisionToPlayerOnPlayerTurn(actor)
+			g.bunCollidesBun(actor)
 			if g.needsRestart {
 				return nil
 			}
@@ -287,25 +288,11 @@ func (g *Game) updatePlaying() error {
 			for _, point := range path {
 				oldX, oldY := actor.GridX, actor.GridY
 				actor.GridX, actor.GridY = point.X, point.Y
-				moved = true
-
-				pushedPatty := false
-				// Start of step-by-step collision checks
-				isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
-				if isBun && g.patty != nil && actor.GridX == g.patty.GridX && actor.GridY == g.patty.GridY {
-					pattyNextX := g.patty.GridX + (actor.GridX - oldX)
-					pattyNextY := g.patty.GridY + (actor.GridY - oldY)
-					if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) || g.isTileOccupiedByCharacter(pattyNextX, pattyNextY) {
-						actor.GridX, actor.GridY = oldX, oldY // Revert move
-						moved = true
-						break // Stop path execution
-					} else {
-						g.patty.GridX = pattyNextX
-						g.patty.GridY = pattyNextY
-						pushedPatty = true
-					}
+				pushedPatty, stopPath := false, false
+				moved, pushedPatty, stopPath = g.checkBunPatty(actor, oldX, oldY)
+				if stopPath {
+					break
 				}
-
 				oldCanDash, oldCanWalk := actor.CanDash, actor.CanWalkThroughWalls
 				g.bunCollidesBun(actor)
 				g.checkBunCheeseMerge()
@@ -333,6 +320,29 @@ func (g *Game) updatePlaying() error {
 	return nil
 }
 
+// TODO: Fix ugly return of 3 params
+// checkBunPatty returns 3 params: moved, pusedPatty, stopPath
+func (g *Game) checkBunPatty(actor *entities.Player, oldX, oldY int) (bool, bool, bool) {
+	moved := true
+
+	pushedPatty := false
+	// Start of step-by-step collision checks
+	isBun := actor.PlayerType == config.TopBun || actor.PlayerType == config.BottomBun
+	if isBun && g.patty != nil && actor.GridX == g.patty.GridX && actor.GridY == g.patty.GridY {
+		pattyNextX := g.patty.GridX + (actor.GridX - oldX)
+		pattyNextY := g.patty.GridY + (actor.GridY - oldY)
+		if !g.currentLevel().IsWalkable(pattyNextX, pattyNextY) || g.isTileOccupiedByCharacter(pattyNextX, pattyNextY) {
+			actor.GridX, actor.GridY = oldX, oldY // Revert move
+			moved = true
+			return moved, false, true
+		} else {
+			g.patty.GridX = pattyNextX
+			g.patty.GridY = pattyNextY
+			pushedPatty = true
+		}
+	}
+	return moved, pushedPatty, false
+}
 func (g *Game) updateEffects() {
 	g.animationManager.Update()
 }
@@ -995,7 +1005,7 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 		if v == player {
 			continue
 		}
-
+		// TODO Extend with collision player to player
 		switch enemy := v.(type) {
 		case entities.Enemier:
 			if enemy.Collision(player) {

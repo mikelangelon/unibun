@@ -48,15 +48,10 @@ func NewIntro() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(21, 1, config.BottomBun),
-		//entities.NewDashingFollowerEnemy(1, 13, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		//// entities.NewPigeon(10, 10),
-		////entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
 		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
 		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
 		entities.NewPigeon(4, 4),
 		entities.NewPigeon(10, 6),
-		//entities.NewFollowerEnemy(10, 10, config.TopBun),
-		//entities.NewFollowerEnemy(3, 8, config.BottomBun),
 	}
 	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
@@ -241,7 +236,6 @@ func PushThePatty() *Level {
 		entities.NewFly(1, 5),
 		entities.NewFly(1, 7),
 		entities.NewFly(1, 9),
-		//entities.NewFly(1, 10),
 		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3),
 		entities.NewDashingFollowerEnemy(22, 2, config.TopBun, 2),
 	}
@@ -291,48 +285,6 @@ func ManyObstacles() *Level {
 		entities.NewDashingFollowerEnemy(8, 8, config.TopBun, 3),
 	}
 	lvl.WinningImg = common.GetImage(assets.Client)
-	return lvl
-}
-
-func NewLevel1b() *Level {
-	w := Cell{Type: CellTypeWall}
-	c := Cell{Type: CellTypeFloor}
-
-	lvl := newLevel()
-	lvl.BurgerPatty = entities.NewBurgerPatty(8, 8)
-	lvl.Winning = []Position{
-		{X: 11, Y: 10},
-	}
-	lvl.cells = [][]Cell{
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
-		{w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w, w, c, c, c, c, c, w},
-		{w, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
-		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, c, w, c, w, w, w, w, c, w},
-		{w, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, w, c, c, c, c, w, w, w, w, w, w, w, w, c, w},
-		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, w, c, c, c, c, c, c, c, w},
-		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, w, c, w, w, c, w, w, w, w},
-		{w, w, c, c, c, c, c, c, c, c, w, c, c, c, c, c, w, c, w, c, c, w, w, c, w},
-		{w, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, w, c, w, c, c, w, w, c, w},
-		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, w, w, c, w, c, c, c, w, c, w},
-		{w, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, w, c, w},
-		{w, c, c, w, w, w, w, w, w, c, w, w, w, w, c, w, c, w, w, w, w, c, w, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
-	}
-	path1 := []image.Point{
-		{X: 5, Y: 3}, {X: 5, Y: 4}, {X: 5, Y: 5}, {X: 5, Y: 6}, {X: 5, Y: 7},
-	}
-	path2 := []image.Point{
-		{X: 11, Y: 7}, {X: 12, Y: 7}, {X: 13, Y: 7}, {X: 14, Y: 7},
-	}
-	lvl.TurnOrderPattern = []interface{}{
-		entities.NewPlayer(3, 1, config.TopBun),
-		entities.NewPlayer(10, 5, config.BottomBun),
-		entities.NewPigeon(10, 10),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
-	}
 	return lvl
 }
 
@@ -487,7 +439,7 @@ func NewLevelLettuceMazeHard() *Level {
 }
 
 // Medium difficulty?
-func NewLevelCheeseMaze() *Level {
+func NotUsed() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 
@@ -570,22 +522,14 @@ func SnakesLevel() *Level {
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w, w, w, c, c, c, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
-	// examplePath := []image.Point{
-	// 	{X: 10, Y: 4}, {X: 11, Y: 4}, {X: 12, Y: 4}, {X: 13, Y: 4}, {X: 14, Y: 4},
-	// }
+
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(1, 1, config.BottomBun),
 		entities.NewPlayer(23, 13, config.TopBun),
-		entities.NewDashingFollowerEnemy(1, 13, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPigeon(10, 10),
-		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
-		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
-		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		entities.NewDashingFollowerEnemy(12, 9, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		entities.NewDashingFollowerEnemy(12, 6, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPigeon(10, 10),
-		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
-		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
+		entities.NewDashingFollowerEnemy(1, 13, config.BottomBun, 3),
+		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3),
+		entities.NewDashingFollowerEnemy(12, 9, config.BottomBun, 3),
+		entities.NewDashingFollowerEnemy(12, 6, config.BottomBun, 3),
 	}
 	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
@@ -622,14 +566,10 @@ func FourSnakes() *Level {
 		entities.NewPlayer(20, 2, config.BottomBun),
 		entities.NewPlayer(5, 2, config.Lettuce),
 		entities.NewPlayer(19, 2, config.Cheese),
-		entities.NewDashingFollowerEnemy(1, 1, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPigeon(10, 10),
-		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
-		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
-		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		entities.NewDashingFollowerEnemy(23, 13, config.Lettuce, 3),  // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		entities.NewDashingFollowerEnemy(1, 13, config.Cheese, 3),    // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-
+		entities.NewDashingFollowerEnemy(1, 1, config.TopBun, 3),
+		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3),
+		entities.NewDashingFollowerEnemy(23, 13, config.Lettuce, 3),
+		entities.NewDashingFollowerEnemy(1, 13, config.Cheese, 3),
 	}
 	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
@@ -665,55 +605,10 @@ func FourSnakesReturn() *Level {
 		entities.NewPlayer(23, 1, config.BottomBun),
 		entities.NewPlayer(23, 13, config.Lettuce),
 		entities.NewPlayer(1, 13, config.Cheese),
-		entities.NewDashingFollowerEnemy(4, 2, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPigeon(10, 10),
-		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
-		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
-		entities.NewDashingFollowerEnemy(20, 2, config.BottomBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		entities.NewDashingFollowerEnemy(19, 10, config.Lettuce, 3),  // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		entities.NewDashingFollowerEnemy(5, 10, config.Cheese, 3),    // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-
-	}
-	lvl.WinningImg = common.GetImage(assets.Client)
-	return lvl
-}
-func NewEmptyLevel() *Level {
-	w := Cell{Type: CellTypeWall}
-	c := Cell{Type: CellTypeFloor}
-	lvl := newLevel()
-	lvl.BurgerPatty = entities.NewBurgerPatty(3, 3)
-	lvl.Winning = []Position{
-		{X: 6, Y: 6},
-	}
-	lvl.cells = [][]Cell{
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
-	}
-	// examplePath := []image.Point{
-	// 	{X: 10, Y: 4}, {X: 11, Y: 4}, {X: 12, Y: 4}, {X: 13, Y: 4}, {X: 14, Y: 4},
-	// }
-	lvl.TurnOrderPattern = []interface{}{
-		entities.NewPlayer(3, 1, config.TopBun),
-		entities.NewPlayer(3, 5, config.BottomBun),
-		//entities.NewPlayer(2, 1, config.Cheese),
-		//entities.NewPlayer(2, 2, config.Lettuce),
-		entities.NewDashingFollowerEnemy(1, 13, config.TopBun, 3), // New dashing follower enemy targeting Lettuce, dashes every 5 turns
-		// entities.NewPigeon(10, 10),
-		//entities.NewFollowerEnemy(8, 9, config.Cheese), // New follower enemy targeting Cheese
-		//entities.NewPathEnemy(examplePath[0].X, examplePath[0].Y, examplePath, assets.Pigeon),
+		entities.NewDashingFollowerEnemy(4, 2, config.TopBun, 3),
+		entities.NewDashingFollowerEnemy(20, 2, config.BottomBun, 3),
+		entities.NewDashingFollowerEnemy(19, 10, config.Lettuce, 3),
+		entities.NewDashingFollowerEnemy(5, 10, config.Cheese, 3),
 	}
 	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
@@ -814,7 +709,7 @@ func PuzzleBuns() *Level {
 		{w, c, w, c, w, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, w, c, c, c, w},
 		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, c, c, w, c, w},
 		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, c, w, c, w, c, w, c, c, c, w},
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w}, // 14
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
 
 	lvl.TurnOrderPattern = []interface{}{
@@ -874,11 +769,46 @@ func NewLevel4() *Level {
 	}
 
 	lvl.TurnOrderPattern = []interface{}{
-		entities.NewPlayer(23, 1, config.TopBun),     // Top-right start
-		entities.NewPlayer(23, 13, config.BottomBun), // Bottom-right start
-		entities.NewPigeon(5, 5),                     // Guarding a path in the top-left area
-		entities.NewPigeon(10, 7),                    // Near the burger patty
-		entities.NewPigeon(17, 9),                    // Patrolling a corridor in the mid-right area
+		entities.NewPlayer(23, 1, config.TopBun),
+		entities.NewPlayer(23, 13, config.BottomBun),
+		entities.NewPigeon(5, 5),
+		entities.NewPigeon(10, 7),
+		entities.NewPigeon(17, 9),
 	}
+	return lvl
+}
+
+// Not used, for testing
+func NewEmptyLevel() *Level {
+	w := Cell{Type: CellTypeWall}
+	c := Cell{Type: CellTypeFloor}
+	lvl := newLevel()
+	lvl.BurgerPatty = entities.NewBurgerPatty(3, 3)
+	lvl.Winning = []Position{
+		{X: 6, Y: 6},
+	}
+	lvl.cells = [][]Cell{
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+	}
+	lvl.TurnOrderPattern = []interface{}{
+		entities.NewPlayer(3, 1, config.TopBun),
+		entities.NewPlayer(3, 5, config.BottomBun),
+		entities.NewDashingFollowerEnemy(1, 13, config.TopBun, 3),
+	}
+	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
 }
