@@ -48,8 +48,8 @@ func NewIntro() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(21, 1, config.BottomBun),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
 		entities.NewPigeon(4, 4),
 		entities.NewPigeon(10, 6),
 	}
@@ -101,10 +101,10 @@ func LettucePresentation() *Level {
 		entities.NewPlayer(7, 9, config.BottomBun),
 		entities.NewPlayer(11, 3, config.Lettuce),
 		entities.NewPigeon(10, 10),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
-		entities.NewPathEnemy(path3[0].X, path3[0].Y, path3),
-		entities.NewPathEnemy(path4[0].X, path4[0].Y, path4),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path3[0].X, path3[0].Y, path3),
+		entities.NewMouse(path4[0].X, path4[0].Y, path4),
 	}
 	return lvl
 }
@@ -155,11 +155,11 @@ func CheesePresentation() *Level {
 		entities.NewPlayer(2, 1, config.TopBun),
 		entities.NewPlayer(5, 3, config.BottomBun),
 		entities.NewPlayer(2, 2, config.Cheese),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
-		entities.NewPathEnemy(path3[0].X, path3[0].Y, path3),
-		entities.NewPathEnemy(path4[0].X, path4[0].Y, path4),
-		entities.NewPathEnemy(path5[0].X, path5[0].Y, path5),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path3[0].X, path3[0].Y, path3),
+		entities.NewMouse(path4[0].X, path4[0].Y, path4),
+		entities.NewMouse(path5[0].X, path5[0].Y, path5),
 	}
 	return lvl
 }
@@ -287,8 +287,8 @@ func ManyObstacles() *Level {
 		entities.NewPlayer(5, 1, config.TopBun),
 		entities.NewPlayer(5, 6, config.BottomBun),
 		entities.NewPlayer(7, 5, config.Cheese),
-		entities.NewPathEnemy(path[0].X, path[0].Y, path),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path[0].X, path[0].Y, path),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
 		entities.NewDashingFollowerEnemy(4, 1, config.TopBun, 3),
 		entities.NewDashingFollowerEnemy(8, 8, config.TopBun, 3),
 	}
@@ -337,8 +337,8 @@ func AnotherLettuce() *Level {
 		entities.NewPlayer(10, 6, config.BottomBun),
 		entities.NewPlayer(15, 8, config.Lettuce),
 		entities.NewPigeon(10, 10),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
 	}
 	return lvl
 }
@@ -391,10 +391,10 @@ func NewLevelLettuceMaze() *Level {
 		entities.NewPlayer(13, 2, config.Lettuce),
 		entities.NewPlayer(14, 2, config.Cheese),
 		entities.NewPlayer(2, 8, config.BottomBun),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
-		entities.NewPathEnemy(path3[0].X, path3[0].Y, path3),
-		entities.NewPathEnemy(path4[0].X, path4[0].Y, path4),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path3[0].X, path3[0].Y, path3),
+		entities.NewMouse(path4[0].X, path4[0].Y, path4),
 	}
 	return lvl
 }
@@ -449,11 +449,11 @@ func NewLevelLettuceMazeHard() *Level {
 		entities.NewPlayer(11, 2, config.TopBun),
 		entities.NewPlayer(13, 2, config.Lettuce),
 		entities.NewPlayer(2, 8, config.BottomBun),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
-		entities.NewPathEnemy(path3[0].X, path3[0].Y, path3),
-		entities.NewPathEnemy(path4[0].X, path4[0].Y, path4),
-		entities.NewPathEnemy(path5[0].X, path5[0].Y, path5),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path3[0].X, path3[0].Y, path3),
+		entities.NewMouse(path4[0].X, path4[0].Y, path4),
+		entities.NewMouse(path5[0].X, path5[0].Y, path5),
 	}
 	return lvl
 }
@@ -507,12 +507,12 @@ func NotUsed() *Level {
 		entities.NewPlayer(11, 2, config.TopBun),
 		entities.NewPlayer(13, 2, config.Cheese),
 		entities.NewPlayer(2, 8, config.BottomBun),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
-		entities.NewPathEnemy(path3[0].X, path3[0].Y, path3),
-		entities.NewPathEnemy(path4[0].X, path4[0].Y, path4),
-		entities.NewPathEnemy(path5[0].X, path5[0].Y, path5),
-		entities.NewPathEnemy(path6[0].X, path6[0].Y, path6),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
+		entities.NewMouse(path3[0].X, path3[0].Y, path3),
+		entities.NewMouse(path4[0].X, path4[0].Y, path4),
+		entities.NewMouse(path5[0].X, path5[0].Y, path5),
+		entities.NewMouse(path6[0].X, path6[0].Y, path6),
 	}
 	return lvl
 }
@@ -680,8 +680,8 @@ func FirstRealLevel() *Level {
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(10, 5, config.BottomBun),
 		entities.NewPigeon(11, 6),
-		entities.NewFollowerEnemy(1, 9, config.TopBun),
-		entities.NewFollowerEnemy(16, 1, config.BottomBun),
+		entities.NewDuck(1, 9, config.TopBun),
+		entities.NewDuck(16, 1, config.BottomBun),
 		entities.NewDashingFollowerEnemy(18, 4, config.BottomBun, 4),
 	}
 	return lvl
@@ -908,10 +908,10 @@ func Unite() *Level {
 		entities.NewFly(19, 1),
 		entities.NewDashingFollowerEnemy(10, 1, config.TopBun, 2),
 		entities.NewDashingFollowerEnemy(15, 13, config.BottomBun, 2),
-		entities.NewFollowerEnemy(3, 10, config.TopBun),
-		entities.NewFollowerEnemy(5, 6, config.BottomBun),
-		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
+		entities.NewDuck(3, 10, config.TopBun),
+		entities.NewDuck(5, 6, config.BottomBun),
+		entities.NewMouse(path1[0].X, path1[0].Y, path1),
+		entities.NewMouse(path2[0].X, path2[0].Y, path2),
 	}
 	return lvl
 }

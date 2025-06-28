@@ -85,7 +85,8 @@ func (p *Player) Draw(screen *ebiten.Image) {
 		// TODO Copy & paste from BurgerPatty.Draw. Unify & Refactor
 		brightness := 1.25 + 0.25*math.Sin(p.pulseOffset/11.0)
 		op.ColorScale.Scale(float32(brightness), float32(brightness), float32(brightness), 1.0)
-		scale := 1.0 + 0.05*math.Sin(p.pulseOffset/20.0)
+
+		scale := 1.0 + 0.15*math.Sin(p.pulseOffset/30.0)
 		w, h := p.Image.Bounds().Dx(), p.Image.Bounds().Dy()
 		centerX, centerY := float64(w)/2, float64(h)/2
 		op.GeoM.Translate(-centerX, -centerY)

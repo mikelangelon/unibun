@@ -216,10 +216,10 @@ func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
 		g.enemyTurnDelayTimer--
 		return
 	}
-	if fe, ok := enemy.(*entities.FollowerEnemy); ok {
+	if fe, ok := enemy.(*entities.Duck); ok {
 		g.setFollowerTarget(fe)
-	} else if dfe, ok := enemy.(*entities.DashingFollowerEnemy); ok {
-		g.setFollowerTarget(&dfe.FollowerEnemy)
+	} else if dfe, ok := enemy.(*entities.Snake); ok {
+		g.setFollowerTarget(&dfe.Duck)
 	} else if dfe, ok := enemy.(*entities.Fly); ok {
 		g.setFlyTarget(dfe)
 	}
@@ -233,7 +233,7 @@ func (g *Game) handleEnemyTurn(enemy entities.Enemier) {
 	}
 }
 
-func (g *Game) setFollowerTarget(fe *entities.FollowerEnemy) {
+func (g *Game) setFollowerTarget(fe *entities.Duck) {
 	targetPlayer := g.turnManager.getPlayerType(fe.GetTargetPlayerType())
 	gridX, gridY := -1, -1
 	if targetPlayer != nil {
@@ -503,7 +503,10 @@ func (g *Game) alreadyMerged() bool {
 }
 
 func (g *Game) Reset() {
-	log.Println("Game Over! Restarting...")
+	if g.currentGameState == StateEndless {
+		g.currentGameState = StateGameOver
+		return
+	}
 	g.needsRestart = false
 	g.resetTimer = 0
 	g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
@@ -517,13 +520,13 @@ func (g *Game) Reset() {
 		switch actualActor := v.(type) {
 		case entities.Enemier:
 			characters = append(characters, actualActor)
-		case *entities.PathEnemy:
+		case *entities.Mouse:
 			characters = append(characters, actualActor)
 		case *entities.Pigeon:
 			characters = append(characters, actualActor)
-		case *entities.FollowerEnemy:
+		case *entities.Duck:
 			characters = append(characters, actualActor)
-		case *entities.DashingFollowerEnemy:
+		case *entities.Snake:
 			characters = append(characters, actualActor)
 		case entities.Player:
 			characters = append(characters, &actualActor)

@@ -114,7 +114,7 @@ func NewEndlessLevel(lvlIndex int) *Level {
 				turnsToDash := rand.IntN(maxTurns-minTurns+1) + minTurns
 				enemy = entities.NewDashingFollowerEnemy(pos.X, pos.Y, targetType, turnsToDash)
 			} else {
-				enemy = entities.NewFollowerEnemy(pos.X, pos.Y, targetType)
+				enemy = entities.NewDuck(pos.X, pos.Y, targetType)
 			}
 		}
 		turnOrder = append(turnOrder, enemy)

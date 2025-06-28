@@ -8,14 +8,14 @@ import (
 	"github.com/mikelangelon/unibun/config"
 )
 
-type FollowerEnemy struct {
+type Duck struct {
 	*Enemy
 	targetPlayerType config.PlayerType
 	targetX, targetY int
 }
 
-func NewFollowerEnemy(startX, startY int, targetType config.PlayerType) *FollowerEnemy {
-	return &FollowerEnemy{
+func NewDuck(startX, startY int, targetType config.PlayerType) *Duck {
+	return &Duck{
 		Enemy:            NewEnemy(startX, startY, duckColorByTarget(targetType, assets.Duck)),
 		targetPlayerType: targetType,
 		targetX:          -1,
@@ -23,22 +23,22 @@ func NewFollowerEnemy(startX, startY int, targetType config.PlayerType) *Followe
 	}
 }
 
-func (fe *FollowerEnemy) SetTarget(x, y int) {
+func (fe *Duck) SetTarget(x, y int) {
 	fe.targetX = x
 	fe.targetY = y
 }
 
-func (fe *FollowerEnemy) Update(level Level) bool {
+func (fe *Duck) Update(level Level) bool {
 	return followTarget(level, fe.Enemy, fe.targetX, fe.targetY)
 }
 
-func (fe *FollowerEnemy) Reset() {
+func (fe *Duck) Reset() {
 	fe.Enemy.Reset()
 	fe.targetX = -1
 	fe.targetY = -1
 }
 
-func (fe *FollowerEnemy) GetTargetPlayerType() config.PlayerType {
+func (fe *Duck) GetTargetPlayerType() config.PlayerType {
 	return fe.targetPlayerType
 }
 

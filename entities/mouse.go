@@ -9,7 +9,7 @@ import (
 	"github.com/mikelangelon/unibun/common"
 )
 
-type PathEnemy struct {
+type Mouse struct {
 	*Enemy
 	path             []image.Point // The sequence of grid coordinates to follow
 	currentPathIndex int
@@ -21,16 +21,16 @@ type PathEnemy struct {
 	initialAsset     []byte
 }
 
-func NewPathEnemy(startX, startY int, path []image.Point) *PathEnemy {
+func NewMouse(startX, startY int, path []image.Point) *Mouse {
 	if len(path) == 0 {
-		slog.Warn("PathEnemy created with an empty path. It will not move.", "startX", startX, "startY", startY)
+		slog.Warn("Mouse created with an empty path. It will not move.", "startX", startX, "startY", startY)
 	}
 	initialX, initialY := startX, startY
 	if len(path) > 0 {
 		initialX = path[0].X
 		initialY = path[0].Y
 	}
-	return &PathEnemy{
+	return &Mouse{
 		Enemy:            NewEnemy(initialX, initialY, []*ebiten.Image{common.GetImage(assets.Mouse)}),
 		path:             path,
 		currentPathIndex: 0,
@@ -41,13 +41,13 @@ func NewPathEnemy(startX, startY int, path []image.Point) *PathEnemy {
 }
 
 // Reset puts the enemy back to work at the beginning of its path
-func (e *PathEnemy) Reset() {
+func (e *Mouse) Reset() {
 	e.Enemy.Reset()
 	e.currentPathIndex = e.initialPathIndex
 	e.pathDirection = e.initialDirection
 }
 
-func (e *PathEnemy) Update(_ Level) bool {
+func (e *Mouse) Update(_ Level) bool {
 	if len(e.path) <= 1 {
 		return true
 	}
@@ -56,7 +56,7 @@ func (e *PathEnemy) Update(_ Level) bool {
 	return updatePosDirection(e.Enemy, oldX, newX, newY)
 }
 
-func (e *PathEnemy) followPath() (int, int) {
+func (e *Mouse) followPath() (int, int) {
 	potentialNextPathIndex := e.currentPathIndex + e.pathDirection
 
 	if potentialNextPathIndex >= len(e.path) {

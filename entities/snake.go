@@ -12,8 +12,8 @@ import (
 	"github.com/mikelangelon/unibun/config"
 )
 
-type DashingFollowerEnemy struct {
-	FollowerEnemy
+type Snake struct {
+	Duck
 	dashState *DashState
 
 	// turnsToDash defines how many turns before the enemy attempts to dash
@@ -22,23 +22,23 @@ type DashingFollowerEnemy struct {
 	dashCounter int
 }
 
-func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, turnsToDash int) *DashingFollowerEnemy {
-	fe := FollowerEnemy{
+func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, turnsToDash int) *Snake {
+	fe := Duck{
 		Enemy:            NewEnemy(startX, startY, imageByTarget(targetType, assets.Snake)),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,
 	}
 
-	return &DashingFollowerEnemy{
-		FollowerEnemy: fe,
-		dashState:     NewDashState(),
-		turnsToDash:   turnsToDash,
-		dashCounter:   turnsToDash, // Start with full counter
+	return &Snake{
+		Duck:        fe,
+		dashState:   NewDashState(),
+		turnsToDash: turnsToDash,
+		dashCounter: turnsToDash, // Start with full counter
 	}
 }
 
-func (dfe *DashingFollowerEnemy) Draw(screen *ebiten.Image) {
+func (dfe *Snake) Draw(screen *ebiten.Image) {
 	dfe.Enemy.Draw(screen)
 
 	if dfe.dashCounter > 0 {
@@ -49,7 +49,7 @@ func (dfe *DashingFollowerEnemy) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (dfe *DashingFollowerEnemy) Update(level Level) bool {
+func (dfe *Snake) Update(level Level) bool {
 	if dfe.dashState.IsActive() {
 		newX, newY, _, finished := dfe.dashState.Update(dfe.gridX, dfe.gridY, level, false)
 		dfe.gridX = newX
@@ -77,7 +77,7 @@ func (dfe *DashingFollowerEnemy) Update(level Level) bool {
 
 			// Going to dash
 			if dx != 0 || dy != 0 {
-				slog.Info("DashingFollowerEnemy trying to dash", "from_x", dfe.gridX, "from_y", dfe.gridY, "dx", dx, "dy", dy)
+				slog.Info("Snake trying to dash", "from_x", dfe.gridX, "from_y", dfe.gridY, "dx", dx, "dy", dy)
 				if dfe.dashState.Start(dfe.gridX, dfe.gridY, dx, dy, 5, level, false) {
 					dfe.dashCounter = dfe.turnsToDash
 
@@ -95,11 +95,11 @@ func (dfe *DashingFollowerEnemy) Update(level Level) bool {
 		return true
 	}
 
-	return dfe.FollowerEnemy.Update(level)
+	return dfe.Duck.Update(level)
 }
 
-func (dfe *DashingFollowerEnemy) Reset() {
-	dfe.FollowerEnemy.Reset()
+func (dfe *Snake) Reset() {
+	dfe.Duck.Reset()
 	dfe.dashState.Reset()
 	dfe.dashCounter = dfe.turnsToDash
 }

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/mikelangelon/unibun/config"
@@ -28,6 +29,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		drawTutorial(screen)
 	case StateGameComplete:
 		g.drawGameComplete(screen)
+	case StateGameOver:
+		g.drawGameOver(screen)
 	case StatePlaying, StateEndless, StatePaused, StateIntro:
 		g.drawPlaying(screen)
 		if g.currentGameState == StateIntro {
@@ -43,20 +46,35 @@ func (g *Game) drawGameComplete(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
 
 	title := "Congratulations!"
-	titleX := (config.WindowWidth - len(title)*8) / 2 // A bit wider for the !
+	titleX := 300
 	ebitenutil.DebugPrintAt(screen, title, titleX, 150)
 
 	msg1 := "You have completed all the levels!"
-	msg1X := (config.WindowWidth - len(msg1)*6) / 2
+	msg1X := 300
 	ebitenutil.DebugPrintAt(screen, msg1, msg1X, 180)
 
 	msg2 := "Thanks for playing UniBun!"
-	msg2X := (config.WindowWidth - len(msg2)*6) / 2
+	msg2X := 300
 	ebitenutil.DebugPrintAt(screen, msg2, msg2X, 250)
+
+	prompt := "Press Enter to return to the Main Menu"
+	promptX := 300
+	ebitenutil.DebugPrintAt(screen, prompt, promptX, 330)
+}
+
+func (g *Game) drawGameOver(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
+	// TODO too similar as drawGameComplete
+	title := fmt.Sprintf("You failed. You passed %d level(s).", g.levelManager.currentLevelIndex)
+	titleX := 300
+	ebitenutil.DebugPrintAt(screen, title, titleX, 150)
 
 	prompt := "Press Enter to return to the Main Menu"
 	promptX := (config.WindowWidth - len(prompt)*6) / 2
 	ebitenutil.DebugPrintAt(screen, prompt, promptX, 330)
+
+	prompt2 := "Press Space to retry"
+	ebitenutil.DebugPrintAt(screen, prompt2, promptX, 430)
 }
 
 func (g *Game) drawPaused(screen *ebiten.Image) {
