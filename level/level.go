@@ -21,6 +21,8 @@ type Level struct {
 
 	FloorMap    *ebiten.Image
 	pulseOffset float64
+	// Just to show the pattern
+	tilesPatterns tilesPatterns
 }
 
 func (l *Level) getRandomTile() *ebiten.Image {
@@ -32,6 +34,7 @@ func (l *Level) getRandomTile() *ebiten.Image {
 	return l.FloorTileImg[r-defaultTileProb]
 }
 
+// TODO winning position should be extracted, to be able to removed isBurgerMerged param
 func (l *Level) Draw(screen *ebiten.Image, isBurgerMerged bool) {
 	if l.FloorMap == nil {
 		l.FloorMap = ebiten.NewImage(l.ScreenWidth(), l.ScreenHeight())
@@ -42,12 +45,7 @@ func (l *Level) Draw(screen *ebiten.Image, isBurgerMerged bool) {
 
 				if cell.Type == CellTypeFloor && len(l.FloorTileImg) > 0 {
 					tile := l.getRandomTile()
-					op := &ebiten.DrawImageOptions{}
-					if (ri+ci)%2 == 0 {
-						op.ColorScale.Scale(0.8, 0.8, 0.8, 1.0)
-					} else {
-						op.ColorScale.Scale(0.5, 0.5, 0.5, 1.0)
-					}
+					op := tilePattern(ri, ci, l.tilesPatterns)
 					op.GeoM.Translate(cellX, cellY)
 					l.FloorMap.DrawImage(tile, op)
 					continue
@@ -125,3 +123,54 @@ func (l *Level) IsWalkable(gridX, gridY int) bool {
 	}
 
 }
+
+type tilesPatterns struct {
+	colorScaleOdd   func(op *ebiten.DrawImageOptions)
+	colorScale2Even func(op *ebiten.DrawImageOptions)
+}
+
+func tilePattern(rowIndex, columnIndex int, tilesPatterns tilesPatterns) *ebiten.DrawImageOptions {
+	op := &ebiten.DrawImageOptions{}
+	if (rowIndex+columnIndex)%2 == 0 {
+		tilesPatterns.colorScaleOdd(op)
+		//switch pattern {
+		//case 0:
+		//	op.ColorScale.Scale(0.8, 0.8, 0.8, 1.0)
+		//case 1:
+		//	op.ColorScale.Scale(0.9, 0.4, 0.3, 1.0)
+		//case 2:
+		//	op.ColorScale.Scale(1, 1, 1, 1)
+		//case 3:
+		//	op.ColorScale.Scale(1, 0.2, 1, 1)
+		//}
+
+	} else {
+		tilesPatterns.colorScale2Even(op)
+		//switch pattern {
+		//case 0:
+		//	op.ColorScale.Scale(0.5, 0.5, 0.5, 1.0)
+		//case 1:
+		//	op.ColorScale.Scale(0.9, 0.1, 0.4, 1.0)
+		//case 2:
+		//	op.ColorScale.Scale(0.9, 0.9, 0.9, 1)
+		//case 3:
+		//	op.ColorScale.Scale(1, 1, 0.2, 1)
+		//}
+
+	}
+	return op
+}
+
+// TODO: Giving up naming properly anything. Rename this
+func tileA(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.8, 0.8, 0.8, 1.0) }
+func tileB(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.9, 0.75, 0.75, 1.0) }
+func tileC(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(1, 1, 1, 1) }
+func tileD(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(1, 0.2, 1, 1) }
+func tileE(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.5, 0.5, 0.5, 1.0) }
+func tileZ(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.8, 0.7, 1.1, 1.0) }
+func tileF(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.9, 0.55, 0.4, 1.0) }
+func tileG(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.8, 0.8, 0.8, 1.0) }
+func tileH(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.9, 0.9, 0.9, 1) }
+
+func tileGreen(op *ebiten.DrawImageOptions)  { op.ColorScale.Scale(0.75, 1.0, 0.6, 1) }
+func tileGreen2(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.85, 1.0, 0.8, 1) }

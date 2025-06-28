@@ -168,6 +168,10 @@ func NewFlies() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileB,
+		colorScale2Even: tileE,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(13, 4)
 	lvl.Winning = []Position{
 		{X: 13, Y: 3},
@@ -275,6 +279,10 @@ func ManyObstacles() *Level {
 	path2 := []image.Point{
 		{X: 10, Y: 11}, {X: 11, Y: 11}, {X: 12, Y: 11}, {X: 13, Y: 11}, {X: 14, Y: 11},
 	}
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileH,
+		colorScale2Even: tileA,
+	}
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(5, 1, config.TopBun),
 		entities.NewPlayer(5, 6, config.BottomBun),
@@ -293,6 +301,10 @@ func AnotherLettuce() *Level {
 	c := Cell{Type: CellTypeFloor}
 
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileH,
+		colorScale2Even: tileB,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(18, 9)
 	lvl.Winning = []Position{
 		{X: 11, Y: 10},
@@ -337,6 +349,10 @@ func NewLevelLettuceMaze() *Level {
 	c := Cell{Type: CellTypeFloor}
 
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileE,
+		colorScale2Even: tileC,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(13, 9)
 	lvl.Winning = []Position{
 		{X: 10, Y: 11},
@@ -389,6 +405,10 @@ func NewLevelLettuceMazeHard() *Level {
 	c := Cell{Type: CellTypeFloor}
 
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileA,
+		colorScale2Even: tileD,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(13, 9)
 	lvl.Winning = []Position{
 		{X: 10, Y: 11},
@@ -501,6 +521,10 @@ func SnakesLevel() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileE,
+		colorScale2Even: tileH,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(11, 7)
 	lvl.Winning = []Position{
 		{X: 12, Y: 9},
@@ -540,6 +564,10 @@ func FourSnakes() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileC,
+		colorScale2Even: tileA,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(14, 10)
 	lvl.Winning = []Position{
 		{X: 14, Y: 5},
@@ -579,6 +607,10 @@ func FourSnakesReturn() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileA,
+		colorScale2Even: tileGreen,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(14, 10)
 	lvl.Winning = []Position{
 		{X: 14, Y: 5},
@@ -640,7 +672,10 @@ func FirstRealLevel() *Level {
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
-
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileF,
+		colorScale2Even: tileA,
+	}
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(10, 5, config.BottomBun),
@@ -656,6 +691,10 @@ func AvoidTheLettuce() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileA,
+		colorScale2Even: tileGreen2,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(21, 12)
 	lvl.Winning = []Position{
 		{X: 20, Y: 6},
@@ -690,6 +729,10 @@ func PuzzleBuns() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileZ,
+		colorScale2Even: tileG,
+	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(12, 7)
 	lvl.Winning = []Position{
 		{X: 23, Y: 1},
@@ -739,6 +782,10 @@ func newLevel() *Level {
 			common.GetImage(assets.FloorTileF),
 		},
 		pulseOffset: 0,
+		tilesPatterns: tilesPatterns{
+			colorScaleOdd:   tileA,
+			colorScale2Even: tileE,
+		},
 	}
 }
 
