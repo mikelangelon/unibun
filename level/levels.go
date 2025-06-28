@@ -1,8 +1,9 @@
 package level
 
 import (
-	"github.com/hajimehoshi/ebiten/v2"
 	"image"
+
+	"github.com/hajimehoshi/ebiten/v2"
 
 	"github.com/mikelangelon/unibun/assets"
 	"github.com/mikelangelon/unibun/common"
@@ -61,46 +62,6 @@ func NewIntro() *Level {
 	return lvl
 }
 
-func NewFlies() *Level {
-	w := Cell{Type: CellTypeWall}
-	c := Cell{Type: CellTypeFloor}
-	lvl := newLevel()
-	lvl.BurgerPatty = entities.NewBurgerPatty(13, 4)
-	lvl.Winning = []Position{
-		{X: 13, Y: 3},
-	}
-	lvl.cells = [][]Cell{
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
-		{w, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
-		{w, c, c, w, w, w, w, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
-		{w, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
-		{w, w, c, w, c, c, c, w, w, c, c, c, c, c, c, c, c, w, w, c, c, c, c, c, w},
-		{w, w, c, w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, w, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, w, w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, w, w, w, w, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
-	}
-	lvl.TurnOrderPattern = []interface{}{
-		entities.NewPlayer(3, 1, config.TopBun),
-		entities.NewPlayer(21, 1, config.BottomBun),
-		entities.NewPlayer(20, 2, config.Cheese),
-		entities.NewFly(1, 13),
-		entities.NewFly(1, 11),
-		entities.NewFly(23, 11),
-		entities.NewFly(22, 13),
-		entities.NewFly(14, 13),
-		entities.NewFly(11, 11),
-	}
-	lvl.WinningImg = common.GetImage(assets.Client)
-	return lvl
-}
-
 func LettucePresentation() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
@@ -154,7 +115,7 @@ func CheesePresentation() *Level {
 	lvl.Winning = []Position{
 		{X: 4, Y: 13},
 	}
-	lvl.IntroText = "If a bun unites with cheese \nPress Ctrl + direction to charge a dash next turn\n While dashing, it will kill enemies.\nPress Enter to continue"
+	lvl.IntroText = "If a bun unites with cheese \nPress Z + direction to charge a dash next turn\n While dashing, it will kill enemies.\nPress Enter to continue"
 	lvl.cells = [][]Cell{
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
@@ -200,43 +161,81 @@ func CheesePresentation() *Level {
 	return lvl
 }
 
-func UseOtherObject() *Level {
+func NewFlies() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
-	lvl.BurgerPatty = entities.NewBurgerPatty(4, 3)
+	lvl.BurgerPatty = entities.NewBurgerPatty(13, 4)
 	lvl.Winning = []Position{
-		{X: 6, Y: 6},
+		{X: 13, Y: 3},
 	}
 	lvl.cells = [][]Cell{
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
-		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
+		{w, c, c, w, w, w, w, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
+		{w, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, w},
+		{w, w, c, w, c, c, c, w, w, c, c, c, c, c, c, c, c, w, w, c, c, c, c, c, w},
+		{w, w, c, w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, w, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, w, w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
-	path := []image.Point{
-		{X: 9, Y: 13}, {X: 10, Y: 13}, {X: 11, Y: 13}, {X: 12, Y: 13}, {X: 13, Y: 13}, {X: 14, Y: 13},
+	lvl.TurnOrderPattern = []interface{}{
+		entities.NewPlayer(3, 1, config.TopBun),
+		entities.NewPlayer(21, 1, config.BottomBun),
+		entities.NewPlayer(20, 2, config.Cheese),
+		entities.NewFly(1, 13),
+		entities.NewFly(1, 11),
+		entities.NewFly(23, 11),
+		entities.NewFly(22, 13),
+		entities.NewFly(14, 13),
+		entities.NewFly(11, 11),
 	}
-	path2 := []image.Point{
-		{X: 10, Y: 11}, {X: 11, Y: 11}, {X: 12, Y: 11}, {X: 13, Y: 11}, {X: 14, Y: 11},
+	lvl.WinningImg = common.GetImage(assets.Client)
+	return lvl
+}
+
+func PushThePatty() *Level {
+	w := Cell{Type: CellTypeWall}
+	c := Cell{Type: CellTypeFloor}
+	lvl := newLevel()
+	lvl.BurgerPatty = entities.NewBurgerPatty(4, 4)
+	lvl.Winning = []Position{
+		{X: 9, Y: 10},
+	}
+	lvl.cells = [][]Cell{
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+		{w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, w, c, w, w, w, c, c, w, w, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, w, w, w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, w, c, c, w, w, c, c, c, c, c, c, w, w, w, w, w},
+		{w, c, c, c, c, c, c, w, c, c, c, c, c, w, w, w, w, w, w, w, c, c, c, c, w},
+		{w, c, c, c, c, w, c, c, c, w, c, c, w, c, w, c, c, c, c, w, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, w, c, c, c, c, w},
+		{w, c, c, c, c, c, c, w, c, c, c, c, c, c, w, c, c, c, w, w, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
 	}
 	lvl.TurnOrderPattern = []interface{}{
-		entities.NewPlayer(5, 1, config.TopBun),
-		entities.NewPlayer(5, 6, config.BottomBun),
-		entities.NewPlayer(7, 5, config.Cheese),
-		entities.NewPathEnemy(path[0].X, path[0].Y, path),
-		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
+		entities.NewPlayer(2, 2, config.TopBun),
+		entities.NewPlayer(23, 13, config.BottomBun),
+		entities.NewFly(1, 1),
+		entities.NewFly(1, 5),
+		entities.NewFly(1, 7),
+		entities.NewFly(1, 9),
+		//entities.NewFly(1, 10),
+		entities.NewDashingFollowerEnemy(23, 1, config.BottomBun, 3),
+		entities.NewDashingFollowerEnemy(22, 2, config.TopBun, 2),
 	}
 	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
@@ -329,7 +328,7 @@ func NewLevel1b() *Level {
 	return lvl
 }
 
-func NewLevel1c() *Level {
+func AnotherLettuce() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 
@@ -712,7 +711,7 @@ func NewEmptyLevel() *Level {
 	return lvl
 }
 
-func NewLevel1() *Level {
+func FirstRealLevel() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 
@@ -742,13 +741,15 @@ func NewLevel1() *Level {
 	lvl.TurnOrderPattern = []interface{}{
 		entities.NewPlayer(3, 1, config.TopBun),
 		entities.NewPlayer(10, 5, config.BottomBun),
-		entities.NewPidgeon(10, 10),
+		entities.NewPidgeon(11, 6),
+		entities.NewFollowerEnemy(1, 9, config.TopBun),
+		entities.NewFollowerEnemy(16, 1, config.BottomBun),
+		entities.NewDashingFollowerEnemy(18, 4, config.BottomBun, 4),
 	}
 	return lvl
 }
 
-// Trick: Avoid the lettuce!
-func NewLevel2() *Level {
+func AvoidTheLettuce() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
@@ -782,7 +783,7 @@ func NewLevel2() *Level {
 	return lvl
 }
 
-func NewLevel3() *Level {
+func PuzzleBuns() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 	lvl := newLevel()
@@ -791,20 +792,20 @@ func NewLevel3() *Level {
 		{X: 23, Y: 1},
 	}
 	lvl.cells = [][]Cell{
-		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w}, // 0
-		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, w, w, c, w, c, w, c, c, c, w}, // 1
-		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, c, c, w, c, w}, // 2
-		{w, c, w, c, w, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, w, c, w, c, w}, // 3
-		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, c, c, w, c, c, c, w}, // 4
-		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, c, w, c, w, c, w, c, w, w, w}, // 5
-		{w, c, w, c, w, c, w, c, c, c, c, c, c, c, c, c, w, c, w, c, w, c, c, c, w}, // 6
-		{w, c, w, c, c, c, w, c, c, c, w, c, c, c, c, c, w, c, c, c, w, c, c, c, w}, // 7 BurgerPatty(12,7)
-		{w, c, w, c, w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, w, c, w, c, w}, // 8
-		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, c, w, c, w, c, w, c, c, c, w}, // 9
-		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, c, c, w, c, w, c, w}, // 10
-		{w, c, w, c, w, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, w, c, c, c, w}, // 11
-		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, c, c, w, c, w}, // 12
-		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, w, w, c, w, c, w, c, c, c, w}, // 13
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, c, w, c, w, c, w, c, c, c, w},
+		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, c, c, w, c, w},
+		{w, c, w, c, w, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, w, c, w, c, w},
+		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, c, c, w, c, c, c, w},
+		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, c, w, c, w, c, w, c, w, w, w},
+		{w, c, w, c, w, c, w, c, c, c, c, c, c, c, c, c, w, c, w, c, w, c, c, c, w},
+		{w, c, w, c, c, c, c, c, c, c, w, c, c, c, c, c, w, c, c, c, w, c, c, c, w},
+		{w, c, w, c, w, c, w, c, c, c, c, c, c, c, c, c, c, c, w, c, w, c, w, c, w},
+		{w, c, c, c, c, c, c, c, w, w, w, w, w, w, w, c, w, c, w, c, w, c, c, c, w},
+		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, c, c, w, c, w, c, w},
+		{w, c, w, c, w, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, w, c, c, c, w},
+		{w, c, w, c, c, c, w, c, w, c, c, w, c, c, w, c, w, c, w, c, c, c, w, c, w},
+		{w, c, c, c, c, c, w, c, w, w, w, w, w, w, w, c, w, c, w, c, w, c, c, c, w},
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w}, // 14
 	}
 
@@ -827,6 +828,7 @@ func newLevel() *Level {
 		},
 		WinningImg:   common.GetImage(assets.Client),
 		FloorTileImg: []*ebiten.Image{common.GetImage(assets.FloorTile), common.GetImage(assets.FloorTileB), common.GetImage(assets.FloorTileC)},
+		pulseOffset:  0,
 	}
 }
 

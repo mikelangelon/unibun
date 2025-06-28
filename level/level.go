@@ -1,6 +1,7 @@
 package level
 
 import (
+	"math"
 	"math/rand/v2"
 
 	"github.com/mikelangelon/unibun/entities"
@@ -18,7 +19,8 @@ type Level struct {
 	FloorTileImg     []*ebiten.Image
 	IntroText        string
 
-	FloorMap *ebiten.Image
+	FloorMap    *ebiten.Image
+	pulseOffset float64
 }
 
 func (l *Level) getRandomTile() *ebiten.Image {
@@ -30,7 +32,7 @@ func (l *Level) getRandomTile() *ebiten.Image {
 	return l.FloorTileImg[r-defaultTileProb]
 }
 
-func (l *Level) Draw(screen *ebiten.Image) {
+func (l *Level) Draw(screen *ebiten.Image, isBurgerMerged bool) {
 	if l.FloorMap == nil {
 		l.FloorMap = ebiten.NewImage(l.ScreenWidth(), l.ScreenHeight())
 		for ri, row := range l.cells {
@@ -59,8 +61,22 @@ func (l *Level) Draw(screen *ebiten.Image) {
 		winRectX := float64(v.X * config.TileSize)
 		winRectY := float64(v.Y * config.TileSize)
 		op := &ebiten.DrawImageOptions{}
+
+		if isBurgerMerged {
+			scale := 1.0 + 0.1*math.Sin(l.pulseOffset/20.0)
+			w, h := l.WinningImg.Bounds().Dx(), l.WinningImg.Bounds().Dy()
+			centerX, centerY := float64(w)/2, float64(h)/2
+
+			op.GeoM.Translate(-centerX, -centerY)
+			op.GeoM.Scale(scale, scale)
+			op.GeoM.Translate(centerX, centerY)
+		}
+
 		op.GeoM.Translate(winRectX, winRectY)
 		screen.DrawImage(l.WinningImg, op)
+	}
+	if isBurgerMerged {
+		l.pulseOffset++
 	}
 }
 

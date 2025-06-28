@@ -95,18 +95,18 @@ func (g *Game) initLevelConstructors() {
 		1:  level.NewIntro,
 		2:  level.LettucePresentation,
 		3:  level.CheesePresentation,
-		4:  level.ManyObstacles,
-		5:  level.SnakesLevel,
+		4:  level.FirstRealLevel,
+		5:  level.AvoidTheLettuce,
 		6:  level.NewFlies,
 		7:  level.FourSnakes,
-		8:  level.NewLevel1,
-		9:  level.NewLevel1b,
-		10: level.FourSnakesReturn,
-		11: level.NewLevelLettuceMaze,
-		12: level.UseOtherObject,
-		13: level.NewLevel1c,
+		8:  level.PushThePatty,
+		9:  level.PuzzleBuns,
+		10: level.ManyObstacles,
+		11: level.FourSnakesReturn,
+		12: level.NewLevelLettuceMaze,
+		13: level.AnotherLettuce,
 		14: level.NewLevelLettuceMazeHard,
-		15: level.NewLevel3,
+		15: level.SnakesLevel, // A bit too difficult?
 	}
 }
 
@@ -737,7 +737,7 @@ func (g *Game) drawPlaying(screen *ebiten.Image) {
 	g.gameScreen.Clear()
 
 	g.gameScreen.Fill(color.RGBA{R: 0x10, G: 0x10, B: 0x10, A: 0xff})
-	g.currentLevel().Draw(g.gameScreen)
+	g.currentLevel().Draw(g.gameScreen, g.patty == nil)
 	for _, character := range g.turnManager.turnOrderDisplay {
 		if character != nil {
 			if g.animationManager.isMergeAnimationPlaying() {

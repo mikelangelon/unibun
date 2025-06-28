@@ -116,7 +116,7 @@ func (p *Player) GetMoveInput() (dx, dy int, isMoving, isDashing bool) {
 	}
 
 	isMoving = dx != 0 || dy != 0
-	isDashing = isMoving && ebiten.IsKeyPressed(ebiten.KeyShiftLeft)
+	isDashing = isMoving && (ebiten.IsKeyPressed(ebiten.KeyZ) || ebiten.IsKeyPressed(ebiten.KeyX))
 	return
 }
 
