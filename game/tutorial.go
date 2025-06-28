@@ -81,8 +81,8 @@ func drawTutorial(screen *ebiten.Image) {
 	yPos += 20
 	drawText("  - Z/X + Arrows/WASD --> Dash (if you have cheese)", 50, yPos)
 	yPos += 20
-	drawText("  - Space --> Pause", 50, yPos)
+	drawText("  - SPACE --> Pause", 50, yPos)
 	yPos += 20
-	drawText("  - Enter --> Select options & to leave this tutorial", 50, yPos)
+	drawText("  - ENTER --> Select options & to leave this tutorial", 50, yPos)
 	yPos += 40
 }

@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -133,6 +132,8 @@ func (g *Game) Update() error {
 		return g.updateTutorial()
 	case StatePaused:
 		return g.updatePaused()
+	case StateGameComplete:
+		return g.updateGameComplete()
 	case StateExiting:
 		os.Exit(0)
 	}
@@ -167,6 +168,13 @@ func (g *Game) handleGameStateChange() {
 }
 
 func (g *Game) updateTutorial() error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		g.currentGameState = StateMenu
+	}
+	return nil
+}
+
+func (g *Game) updateGameComplete() error {
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		g.currentGameState = StateMenu
 	}
@@ -387,7 +395,11 @@ func (g *Game) updateWinAnimation() {
 			g.startEndlessGame() // This reloads the endless mode
 		} else {
 			g.levelManager.passNextLevel()
-			g.currentGameState = StateLevelSelect
+			if g.levelManager.AllLevelsCompleted() {
+				g.currentGameState = StateGameComplete
+			} else {
+				g.currentGameState = StateLevelSelect
+			}
 		}
 	}
 }
@@ -446,45 +458,6 @@ func (g *Game) drawIntro(screen *ebiten.Image) {
 		textX := boxX + (boxWidth-len(line)*charWidth)/2
 		textY := startY + i*lineHeight
 		ebitenutil.DebugPrintAt(screen, line, textX, textY)
-	}
-}
-
-// draws 15 boxes, in a 3x5 grid.
-func (g *Game) drawLevelSelect(screen *ebiten.Image) {
-	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
-	ebitenutil.DebugPrintAt(screen, "Select a Level", config.WindowWidth/2-70, 40)
-
-	const (
-		cols        = 5
-		rows        = 3
-		boxSize     = 80
-		padding     = 20
-		totalWidth  = cols*boxSize + (cols-1)*padding
-		totalHeight = rows*boxSize + (rows-1)*padding
-		startX      = (config.WindowWidth - totalWidth) / 2
-		startY      = (config.WindowHeight - totalHeight) / 2
-	)
-
-	for i := 0; i < 15; i++ {
-		col := i % cols
-		row := i / cols
-		boxX := startX + col*(boxSize+padding)
-		boxY := startY + row*(boxSize+padding)
-
-		boxColor := color.RGBA{0x40, 0x40, 0x40, 0xFF}
-		levelNum := i + 1
-		if g.levelManager.completedLevels[levelNum] {
-			boxColor = color.RGBA{0x20, 0x60, 0x20, 0xFF}
-		}
-		if i == g.levelManager.selectedLevelBox {
-			boxColor = color.RGBA{0x90, 0x90, 0x90, 0xFF}
-		}
-		ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxSize), float64(boxSize), boxColor)
-
-		levelNumStr := fmt.Sprintf("%d", levelNum)
-		textX := boxX + (boxSize-len(levelNumStr)*6)/2
-		textY := boxY + (boxSize-16)/2
-		ebitenutil.DebugPrintAt(screen, levelNumStr, textX, textY)
 	}
 }
 
@@ -553,7 +526,6 @@ func (g *Game) startWinAnimation(gridX, gridY int) {
 	g.animationManager.playWinningAnimation(gridX, gridY)
 	if !g.animationManager.isWinningPlaying() {
 		g.status = Win
-		log.Println("YOU WIN! Merged burger reached the win tile.")
 	}
 }
 
@@ -606,7 +578,6 @@ func (g *Game) checkBunCheeseMerge() {
 }
 
 func (g *Game) cheesePower(bun, cheese *entities.Player) {
-	log.Println("Bun and Cheese merged! Bun can now dash.")
 	bun.CanDash = true
 	bun.Image = merge2Images(bun.Image, cheese.Image)
 	var newTurnOrder []character
@@ -640,9 +611,9 @@ func (g *Game) checkBunLettuceMerge() {
 	}
 }
 
+// lettucePower unites bun to lettuce and gives it the power of crossing walls
 func (g *Game) lettucePower(bun, lettuce *entities.Player) {
-	slog.Info("Bun and Lettuce merged! Bun can now walk through walls")
-	bun.CanWalkThroughWalls = true // Grant power of walking on through the walls
+	bun.CanWalkThroughWalls = true
 	bun.Image = merge2Images(bun.Image, lettuce.Image)
 
 	var newTurnOrder []character
@@ -660,9 +631,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	case StateMenu:
 		g.menu.drawMenu(screen)
 	case StateLevelSelect:
-		g.drawLevelSelect(screen)
+		g.levelManager.draw(screen)
 	case StateTutorial:
 		drawTutorial(screen)
+	case StateGameComplete:
+		g.drawGameComplete(screen)
 	case StatePlaying, StateEndless, StatePaused, StateIntro:
 		g.drawPlaying(screen)
 		if g.currentGameState == StateIntro {
@@ -672,6 +645,26 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			g.drawPaused(screen)
 		}
 	}
+}
+
+func (g *Game) drawGameComplete(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
+
+	title := "Congratulations!"
+	titleX := 300
+	ebitenutil.DebugPrintAt(screen, title, titleX, 100)
+
+	msg1 := "You have completed the 15 levels!"
+	msg1X := 300
+	ebitenutil.DebugPrintAt(screen, msg1, msg1X, 180)
+
+	msg2 := "Thanks for playing UniBun!"
+	msg2X := 300
+	ebitenutil.DebugPrintAt(screen, msg2, msg2X, 200)
+
+	prompt := "Press Enter to return to the Main Menu"
+	promptX := 300
+	ebitenutil.DebugPrintAt(screen, prompt, promptX, 280)
 }
 
 func (g *Game) drawPaused(screen *ebiten.Image) {
