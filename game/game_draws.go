@@ -45,36 +45,38 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func (g *Game) drawGameComplete(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
 
+	const paddingLeft = 300
 	title := "Congratulations!"
-	titleX := 300
+	titleX := paddingLeft
 	ebitenutil.DebugPrintAt(screen, title, titleX, 150)
 
 	msg1 := "You have completed all the levels!"
-	msg1X := 300
+	msg1X := paddingLeft
 	ebitenutil.DebugPrintAt(screen, msg1, msg1X, 180)
 
 	msg2 := "Thanks for playing UniBun!"
-	msg2X := 300
+	msg2X := paddingLeft
 	ebitenutil.DebugPrintAt(screen, msg2, msg2X, 250)
 
-	prompt := "Press Enter to return to the Main Menu"
-	promptX := 300
+	prompt := " --> Press Enter to return to the Main Menu"
+	promptX := paddingLeft
 	ebitenutil.DebugPrintAt(screen, prompt, promptX, 330)
 }
 
 func (g *Game) drawGameOver(screen *ebiten.Image) {
+	const paddingLeft = 300
 	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
 	// TODO too similar as drawGameComplete
-	title := fmt.Sprintf("You failed. You passed %d level(s).", g.levelManager.currentLevelIndex)
-	titleX := 300
+	title := fmt.Sprintf("You failed. You passed %d level(s).", g.currentEndlessLevel)
+	titleX := paddingLeft
 	ebitenutil.DebugPrintAt(screen, title, titleX, 150)
 
-	prompt := "Press Enter to return to the Main Menu"
-	promptX := (config.WindowWidth - len(prompt)*6) / 2
-	ebitenutil.DebugPrintAt(screen, prompt, promptX, 330)
+	prompt := " --> Press Enter to return to the Main Menu"
+	promptX := paddingLeft
+	ebitenutil.DebugPrintAt(screen, prompt, promptX, 230)
 
-	prompt2 := "Press Space to retry"
-	ebitenutil.DebugPrintAt(screen, prompt2, promptX, 430)
+	prompt2 := " --> Press Space to retry"
+	ebitenutil.DebugPrintAt(screen, prompt2, promptX, 280)
 }
 
 func (g *Game) drawPaused(screen *ebiten.Image) {

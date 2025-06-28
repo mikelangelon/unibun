@@ -27,7 +27,7 @@ type Player struct {
 	initialCanDash             bool
 	initialCanWalkThroughWalls bool
 
-	dashState *DashState
+	DashState *DashState
 }
 
 type Level interface {
@@ -70,7 +70,7 @@ func NewPlayer(startX, startY int, playerType config.PlayerType) Player {
 		initialGridY:               startY,
 		initialCanDash:             false,
 		initialCanWalkThroughWalls: false,
-		dashState:                  NewDashState(),
+		DashState:                  NewDashState(),
 	}
 	return p
 }
@@ -103,9 +103,9 @@ func (p *Player) CollisionTo(gridX, gridY int) bool {
 	return p.GridX == gridX && p.GridY == gridY
 }
 func (p *Player) Update(level Level) bool {
-	if p.dashState != nil && p.dashState.IsActive() {
+	if p.DashState != nil && p.DashState.IsActive() {
 		// If currently dashing, process the next step of the dash.
-		newX, newY, moved, finished := p.dashState.Update(p.GridX, p.GridY, level, p.CanWalkThroughWalls)
+		newX, newY, moved, finished := p.DashState.Update(p.GridX, p.GridY, level, p.CanWalkThroughWalls)
 		p.GridX = newX
 		p.GridY = newY
 
@@ -131,7 +131,7 @@ func (p *Player) GetMoveInput() (dx, dy int, isMoving, isDashing bool) {
 }
 
 func (p *Player) IsDashing() bool {
-	return p.dashState != nil && p.dashState.IsActive()
+	return p.DashState != nil && p.DashState.IsActive()
 }
 
 func (p *Player) Reset() {
@@ -139,8 +139,8 @@ func (p *Player) Reset() {
 	p.GridY = p.initialGridY
 	p.CanDash = p.initialCanDash
 	p.CanWalkThroughWalls = p.initialCanWalkThroughWalls
-	if p.dashState != nil {
-		p.dashState.Reset()
+	if p.DashState != nil {
+		p.DashState.Reset()
 	}
 	p.pulseOffset = 0.0
 	p.IsActiveTurn = false
@@ -167,5 +167,5 @@ func (p *Player) CalculateMovePath(level Level, dx, dy int) []image.Point {
 
 // StartDash initiates a dash movement for the player.
 func (p *Player) StartDash(level Level, dx, dy int) bool {
-	return p.dashState.Start(p.GridX, p.GridY, dx, dy, 10, level, p.CanWalkThroughWalls)
+	return p.DashState.Start(p.GridX, p.GridY, dx, dy, 10, level, p.CanWalkThroughWalls)
 }

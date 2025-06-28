@@ -30,7 +30,7 @@ func (g *Game) Update() error {
 	case StateGameComplete:
 		return g.updateGameComplete()
 	case StateGameOver:
-		return g.updateGameComplete()
+		return g.updateGameOver()
 	case StateExiting:
 		os.Exit(0)
 	}
@@ -56,7 +56,7 @@ func (g *Game) updateGameOver() error {
 		g.currentGameState = StateMenu
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
-		g.currentGameState = StateEndless
+		g.startEndlessGame()
 	}
 	return nil
 }

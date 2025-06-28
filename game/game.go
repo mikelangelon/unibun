@@ -284,6 +284,7 @@ func (g *Game) justMerged(p *entities.Player, oldCanDash, oldCanWalk bool) bool 
 
 func (g *Game) startEndlessGame() {
 	slog.Info("Starting new endless game")
+	g.currentEndlessLevel = 0
 	g.currentGameState = StateEndless
 	g.level = level.NewEndlessLevel(g.currentEndlessLevel)
 	g.status = Playing
@@ -301,7 +302,10 @@ func (g *Game) bunCollidesBun(player *entities.Player) {
 	}
 	otherBun := g.turnManager.getPlayerType(otherBunType)
 	if otherBun != nil && player.GridX == otherBun.GridX && player.GridY == otherBun.GridY {
-		log.Println("Buns collided!")
+		if !g.needsRestart {
+			g.shake = newShake(g.shakeDuration(), shakeDefaultMagnitude)
+			g.resetTimer = g.shakeDuration() + 10 // delay a bit
+		}
 		g.needsRestart = true
 	}
 }
@@ -441,6 +445,7 @@ func (g *Game) performMerge() {
 		Image:               mergedImage,
 		CanDash:             topBunPlayer.CanDash || bottomBunPlayer.CanDash,
 		CanWalkThroughWalls: topBunPlayer.CanWalkThroughWalls || bottomBunPlayer.CanWalkThroughWalls,
+		DashState:           entities.NewDashState(),
 	}
 	var charactersWithoutMergedOnes []character
 	for _, v := range g.turnManager.turnOrderDisplay {
@@ -503,16 +508,17 @@ func (g *Game) alreadyMerged() bool {
 }
 
 func (g *Game) Reset() {
-	if g.currentGameState == StateEndless {
-		g.currentGameState = StateGameOver
-		return
-	}
 	g.needsRestart = false
 	g.resetTimer = 0
 	g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
 	g.patty = &g.currentLevel().BurgerPatty
 	if g.patty != nil {
 		g.patty.Reset()
+	}
+
+	if g.currentGameState == StateEndless {
+		g.currentGameState = StateGameOver
+		return
 	}
 
 	var characters []character
@@ -551,8 +557,8 @@ func (g *Game) checkCollisionToPlayer(enemy entities.Enemier) {
 		case *entities.Player:
 			if enemy.Collision(player) {
 				if !g.needsRestart {
-					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
-					g.resetTimer = shakeDefaultDuration + 10 // delay a bit
+					g.shake = newShake(g.shakeDuration(), shakeDefaultMagnitude)
+					g.resetTimer = g.shakeDuration() + 10 // delay a bit
 				}
 				g.audios.eatingSoundPlayer.Rewind()
 				g.audios.eatingSoundPlayer.Play()
@@ -569,8 +575,8 @@ func (g *Game) checkCollisionToPatty(enemy entities.Enemier) {
 	if _, ok := enemy.(*entities.Fly); ok {
 		if enemy.Collision(&entities.Player{GridX: g.patty.GridX, GridY: g.patty.GridY}) {
 			if !g.needsRestart {
-				g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
-				g.resetTimer = shakeDefaultDuration + 10 // delay a bit
+				g.shake = newShake(g.shakeDuration(), shakeDefaultMagnitude)
+				g.resetTimer = g.shakeDuration() + 10 // delay a bit
 			}
 			g.audios.eatingSoundPlayer.Rewind()
 			g.audios.eatingSoundPlayer.Play()
@@ -583,8 +589,8 @@ func (g *Game) checkCollisionToPatty(enemy entities.Enemier) {
 		case *entities.Player:
 			if enemy.Collision(player) {
 				if !g.needsRestart {
-					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
-					g.resetTimer = shakeDefaultDuration + 10 // delay a bit
+					g.shake = newShake(g.shakeDuration(), shakeDefaultMagnitude)
+					g.resetTimer = g.shakeDuration() + 10 // delay a bit
 				}
 				g.audios.eatingSoundPlayer.Rewind()
 				g.audios.eatingSoundPlayer.Play()
@@ -609,7 +615,7 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 					g.turnManager.turnOrderDisplay = append(g.turnManager.turnOrderDisplay[:i], g.turnManager.turnOrderDisplay[i+1:]...)
 					g.animationManager.playKillEffect(player.GridX, player.GridY)
 				} else if !g.needsRestart {
-					g.shake = newShake(shakeDefaultDuration, shakeDefaultMagnitude)
+					g.shake = newShake(g.shakeDuration(), shakeDefaultMagnitude)
 					g.resetTimer = shakeDefaultDuration + 10
 					g.audios.eatingSoundPlayer.Rewind()
 					g.audios.eatingSoundPlayer.Play()
@@ -619,4 +625,11 @@ func (g *Game) checkCollisionToPlayerOnPlayerTurn(player *entities.Player) {
 			}
 		}
 	}
+}
+
+func (g *Game) shakeDuration() int {
+	if g.currentGameState == StateEndless {
+		return shakeDefaultDuration
+	}
+	return shakeDefaultDuration * 2
 }
