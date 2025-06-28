@@ -11,32 +11,18 @@ import (
 )
 
 type FollowerEnemy struct {
-	gridX, gridY               int
-	initialGridX, initialGridY int
-	image                      *ebiten.Image
-	targetPlayerType           config.PlayerType
-	targetX, targetY           int
+	*Enemy
+	targetPlayerType config.PlayerType
+	targetX, targetY int
 }
 
 func NewFollowerEnemy(startX, startY int, targetType config.PlayerType) *FollowerEnemy {
 	return &FollowerEnemy{
-		gridX:            startX,
-		gridY:            startY,
-		initialGridX:     startX,
-		initialGridY:     startY,
-		image:            imageByTarget(targetType, assets.Snake),
+		Enemy:            NewEnemy(startX, startY, duckColorByTarget(targetType, assets.Duck)),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,
 	}
-}
-
-func (fe *FollowerEnemy) Draw(screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
-	pixelX := float64(fe.gridX * config.TileSize)
-	pixelY := float64(fe.gridY * config.TileSize)
-	op.GeoM.Translate(pixelX, pixelY)
-	screen.DrawImage(fe.image, op)
 }
 
 func (fe *FollowerEnemy) SetTarget(x, y int) {
@@ -47,7 +33,7 @@ func (fe *FollowerEnemy) SetTarget(x, y int) {
 func (fe *FollowerEnemy) Update(level Level) bool {
 	if fe.targetX == -1 || fe.targetY == -1 {
 		// Move random if there is no target
-		fe.gridX, fe.gridY = nextRandomMove(level, fe.gridX, fe.gridY)
+		fe.gridX, fe.gridY = nextRandomMove(level, &Enemy{})
 		return true
 	}
 
@@ -69,17 +55,8 @@ func (fe *FollowerEnemy) Update(level Level) bool {
 	return true
 }
 
-func (fe *FollowerEnemy) Collision(player *Player) bool {
-	return fe.gridX == player.GridX && fe.gridY == player.GridY
-}
-
-func (fe *FollowerEnemy) Image() *ebiten.Image {
-	return fe.image
-}
-
 func (fe *FollowerEnemy) Reset() {
-	fe.gridX = fe.initialGridX
-	fe.gridY = fe.initialGridY
+	fe.Enemy.Reset()
 	fe.targetX = -1
 	fe.targetY = -1
 }
@@ -88,18 +65,13 @@ func (fe *FollowerEnemy) GetTargetPlayerType() config.PlayerType {
 	return fe.targetPlayerType
 }
 
-func imageByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
+func duckColorByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
 	op := &ebiten.DrawImageOptions{}
-	// Coloring based on target
 	switch targetType {
 	case config.TopBun:
-		op.ColorScale.Scale(1, 0.5, 0.5, 1)
+		op.ColorScale.Scale(0.9, 0.9, 0.1, 1)
 	case config.BottomBun:
-		op.ColorScale.Scale(0.5, 0.5, 1, 1)
-	case config.Lettuce:
-		op.ColorScale.Scale(0.1, 1, 0.1, 1)
-	case config.Cheese:
-		op.ColorScale.Scale(1, 1, 0.1, 1)
+		op.ColorScale.Scale(1, 0.6, 0.6, 1)
 	}
 	coloredImage := ebiten.NewImage(config.TileSize, config.TileSize)
 	coloredImage.DrawImage(common.GetImage(b), op)

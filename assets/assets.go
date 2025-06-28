@@ -26,8 +26,14 @@ var (
 	//go:embed pidgeon.png
 	Pidgeon []byte
 
+	//go:embed mouse.png
+	Mouse []byte
+
 	//go:embed snake.png
 	Snake []byte
+
+	//go:embed duck.png
+	Duck []byte
 
 	//go:embed cat.png
 	Cat []byte

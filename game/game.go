@@ -92,7 +92,7 @@ func NewGame() *Game {
 }
 func (g *Game) initLevelConstructors() {
 	g.levelConstructors = map[int]func() *level.Level{
-		1: level.NewLevel1,
+		1: level.NewIntro,
 		2: level.NewLevel2,
 		3: level.NewLevel3,
 		4: level.NewLevel4,
@@ -421,7 +421,7 @@ func (g *Game) startLevel(levelNum int) {
 	constructor, ok := g.levelConstructors[levelNum]
 	if !ok {
 		// Plan B for now
-		constructor = level.NewLevel0
+		constructor = level.NewIntro
 	}
 	g.level = constructor()
 	g.status = Playing
@@ -450,14 +450,14 @@ func (g *Game) drawIntro(screen *ebiten.Image) {
 		return
 	}
 
-	overlayColor := color.RGBA{0, 0, 0, 50}
+	overlayColor := color.RGBA{0, 0, 0, 80}
 	ebitenutil.DrawRect(screen, 0, 0, float64(config.WindowWidth), float64(config.WindowHeight), overlayColor)
 
 	boxWidth := 400
 	boxHeight := 150
 	boxX := (config.WindowWidth - boxWidth) / 2
 	boxY := (config.WindowHeight - boxHeight) / 2
-	boxColor := color.RGBA{0x20, 0x20, 0x20, 50}
+	boxColor := color.RGBA{0x20, 0x20, 0x20, 80}
 	ebitenutil.DrawRect(screen, float64(boxX), float64(boxY), float64(boxWidth), float64(boxHeight), boxColor)
 
 	introText := g.currentLevel().IntroText
@@ -935,7 +935,7 @@ func (g *Game) Reset() {
 		switch actualActor := v.(type) {
 		case *entities.PathEnemy:
 			characters = append(characters, actualActor)
-		case *entities.Enemy:
+		case *entities.Pigeon:
 			characters = append(characters, actualActor)
 		case *entities.FollowerEnemy:
 			characters = append(characters, actualActor)

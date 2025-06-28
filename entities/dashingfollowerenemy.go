@@ -2,6 +2,7 @@ package entities
 
 import (
 	"fmt"
+	"github.com/mikelangelon/unibun/common"
 	"log/slog"
 	"math"
 
@@ -23,11 +24,7 @@ type DashingFollowerEnemy struct {
 
 func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, turnsToDash int) *DashingFollowerEnemy {
 	fe := FollowerEnemy{
-		gridX:            startX,
-		gridY:            startY,
-		initialGridX:     startX,
-		initialGridY:     startY,
-		image:            imageByTarget(targetType, assets.Snake),
+		Enemy:            NewEnemy(startX, startY, imageByTarget(targetType, assets.Snake)),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,
@@ -42,7 +39,7 @@ func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, t
 }
 
 func (dfe *DashingFollowerEnemy) Draw(screen *ebiten.Image) {
-	dfe.FollowerEnemy.Draw(screen)
+	dfe.Enemy.Draw(screen)
 
 	if dfe.dashCounter > 0 {
 		s := fmt.Sprintf("%d", dfe.dashCounter)
@@ -105,4 +102,22 @@ func (dfe *DashingFollowerEnemy) Reset() {
 	dfe.FollowerEnemy.Reset()
 	dfe.dashState.Reset()
 	dfe.dashCounter = dfe.turnsToDash
+}
+
+func imageByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
+	op := &ebiten.DrawImageOptions{}
+	// Coloring based on target
+	switch targetType {
+	case config.TopBun:
+		op.ColorScale.Scale(1, 0.5, 0.5, 1)
+	case config.BottomBun:
+		op.ColorScale.Scale(0.5, 0.5, 1, 1)
+	case config.Lettuce:
+		op.ColorScale.Scale(0.1, 1, 0.1, 1)
+	case config.Cheese:
+		op.ColorScale.Scale(1, 1, 0.1, 1)
+	}
+	coloredImage := ebiten.NewImage(config.TileSize, config.TileSize)
+	coloredImage.DrawImage(common.GetImage(b), op)
+	return coloredImage
 }

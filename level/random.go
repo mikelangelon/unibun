@@ -89,10 +89,10 @@ func NewEndlessLevel(lvlIndex int) *Level {
 
 		/**
 		Distribute the 3 enemy types, leaving the path type outside because no idea how to randomize it properly
-		Enemy is the easiest, dash follower medium and follower the hardest.
+		Pigeon is the easiest, dash follower medium and follower the hardest.
 		from 0 to 100
-		- Enemy would be between 0 to 50
-		- DashFollower would be between Enemy value and 60
+		- Pigeon would be between 0 to 50
+		- DashFollower would be between Pigeon value and 60
 		- Follower just the last threshold
 
 		*/
@@ -104,7 +104,7 @@ func NewEndlessLevel(lvlIndex int) *Level {
 		r := rand.Float64() * 100
 
 		if len(availablePlayerTypes) == 0 || r < enemyThreshold {
-			enemy = entities.NewEnemy(pos.X, pos.Y)
+			enemy = entities.NewPidgeon(pos.X, pos.Y)
 		} else {
 			targetType := availablePlayerTypes[rand.IntN(len(availablePlayerTypes))]
 			if r < dashThreshold {
