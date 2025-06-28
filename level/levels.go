@@ -859,3 +859,60 @@ func NewEmptyLevel() *Level {
 	lvl.WinningImg = common.GetImage(assets.Client)
 	return lvl
 }
+
+func Unite() *Level {
+	w := Cell{Type: CellTypeWall}
+	c := Cell{Type: CellTypeFloor}
+	lvl := newLevel()
+	lvl.tilesPatterns = tilesPatterns{
+		colorScaleOdd:   tileUniteA,
+		colorScale2Even: tileUniteB,
+	}
+	lvl.BurgerPatty = entities.NewBurgerPatty(20, 7)
+	lvl.Winning = []Position{
+		{X: 11, Y: 2},
+	}
+	lvl.cells = [][]Cell{
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, c, w},
+		{w, c, w, c, w, c, w, c, c, w, c, w, c, w, w, w, c, w, w, w, w, c, c, c, w},
+		{w, c, w, c, w, c, w, c, c, w, c, w, c, c, w, c, c, w, c, c, c, c, c, c, w},
+		{w, c, w, c, w, c, w, c, w, w, c, w, c, c, w, c, c, w, w, w, w, c, c, c, w},
+		{w, c, w, c, w, c, w, w, c, w, c, w, c, c, w, c, c, w, c, c, c, c, c, c, w},
+		{w, c, w, w, w, c, w, c, c, w, c, w, c, c, w, c, c, w, w, w, w, c, c, c, w},
+		{w, c, c, c, c, c, c, c, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, w, c, c, c, w, c, c, c, c, w, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, w, c, w, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, w},
+		{w, c, c, c, c, c, c, w, c, c, c, c, c, c, w, c, c, c, c, c, c, c, c, c, w},
+		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
+	}
+	path1 := []image.Point{
+		{X: 14, Y: 2}, {X: 14, Y: 3}, {X: 14, Y: 4}, {X: 14, Y: 5},
+	}
+	path2 := []image.Point{
+		{X: 15, Y: 7}, {X: 16, Y: 7},
+	}
+	lvl.TurnOrderPattern = []interface{}{
+		entities.NewPlayer(1, 1, config.TopBun),
+		entities.NewPlayer(22, 7, config.BottomBun),
+		entities.NewPlayer(1, 13, config.Lettuce),
+		entities.NewPlayer(18, 8, config.Cheese),
+		entities.NewPigeon(23, 2),
+		entities.NewPigeon(18, 12),
+		entities.NewPigeon(8, 8),
+		entities.NewFly(23, 13),
+		entities.NewFly(19, 13),
+		entities.NewFly(23, 1),
+		entities.NewFly(19, 1),
+		entities.NewDashingFollowerEnemy(10, 1, config.TopBun, 2),
+		entities.NewDashingFollowerEnemy(15, 13, config.BottomBun, 2),
+		entities.NewFollowerEnemy(3, 10, config.TopBun),
+		entities.NewFollowerEnemy(5, 6, config.BottomBun),
+		entities.NewPathEnemy(path1[0].X, path1[0].Y, path1),
+		entities.NewPathEnemy(path2[0].X, path2[0].Y, path2),
+	}
+	return lvl
+}

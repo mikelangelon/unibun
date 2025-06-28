@@ -133,30 +133,8 @@ func tilePattern(rowIndex, columnIndex int, tilesPatterns tilesPatterns) *ebiten
 	op := &ebiten.DrawImageOptions{}
 	if (rowIndex+columnIndex)%2 == 0 {
 		tilesPatterns.colorScaleOdd(op)
-		//switch pattern {
-		//case 0:
-		//	op.ColorScale.Scale(0.8, 0.8, 0.8, 1.0)
-		//case 1:
-		//	op.ColorScale.Scale(0.9, 0.4, 0.3, 1.0)
-		//case 2:
-		//	op.ColorScale.Scale(1, 1, 1, 1)
-		//case 3:
-		//	op.ColorScale.Scale(1, 0.2, 1, 1)
-		//}
-
 	} else {
 		tilesPatterns.colorScale2Even(op)
-		//switch pattern {
-		//case 0:
-		//	op.ColorScale.Scale(0.5, 0.5, 0.5, 1.0)
-		//case 1:
-		//	op.ColorScale.Scale(0.9, 0.1, 0.4, 1.0)
-		//case 2:
-		//	op.ColorScale.Scale(0.9, 0.9, 0.9, 1)
-		//case 3:
-		//	op.ColorScale.Scale(1, 1, 0.2, 1)
-		//}
-
 	}
 	return op
 }
@@ -174,3 +152,6 @@ func tileH(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.9, 0.9, 0.9, 1) 
 
 func tileGreen(op *ebiten.DrawImageOptions)  { op.ColorScale.Scale(0.75, 1.0, 0.6, 1) }
 func tileGreen2(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(0.85, 1.0, 0.8, 1) }
+
+func tileUniteA(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(1.0, 1.0, 1.5, 1.0) }
+func tileUniteB(op *ebiten.DrawImageOptions) { op.ColorScale.Scale(2.0, 2.0, 1, 1.0) }

@@ -394,8 +394,10 @@ func (g *Game) updateWinAnimation() {
 			g.currentEndlessLevel++
 			g.startEndlessGame() // This reloads the endless mode
 		} else {
-			g.levelManager.passNextLevel()
-			if g.levelManager.AllLevelsCompleted() {
+			g.levelManager.passNextLevel() // Mark level as complete
+			// If we just beat the secret level (16), show the final win screen.
+			// Otherwise, go back to the select screen to reveal the secret level.
+			if g.levelManager.currentLevelIndex == 16 {
 				g.currentGameState = StateGameComplete
 			} else {
 				g.currentGameState = StateLevelSelect
@@ -651,20 +653,20 @@ func (g *Game) drawGameComplete(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{R: 20, G: 20, B: 20, A: 255})
 
 	title := "Congratulations!"
-	titleX := 300
-	ebitenutil.DebugPrintAt(screen, title, titleX, 100)
+	titleX := (config.WindowWidth - len(title)*8) / 2 // A bit wider for the !
+	ebitenutil.DebugPrintAt(screen, title, titleX, 150)
 
-	msg1 := "You have completed the 15 levels!"
-	msg1X := 300
+	msg1 := "You have completed all the levels!"
+	msg1X := (config.WindowWidth - len(msg1)*6) / 2
 	ebitenutil.DebugPrintAt(screen, msg1, msg1X, 180)
 
 	msg2 := "Thanks for playing UniBun!"
-	msg2X := 300
-	ebitenutil.DebugPrintAt(screen, msg2, msg2X, 200)
+	msg2X := (config.WindowWidth - len(msg2)*6) / 2
+	ebitenutil.DebugPrintAt(screen, msg2, msg2X, 250)
 
 	prompt := "Press Enter to return to the Main Menu"
-	promptX := 300
-	ebitenutil.DebugPrintAt(screen, prompt, promptX, 280)
+	promptX := (config.WindowWidth - len(prompt)*6) / 2
+	ebitenutil.DebugPrintAt(screen, prompt, promptX, 330)
 }
 
 func (g *Game) drawPaused(screen *ebiten.Image) {
