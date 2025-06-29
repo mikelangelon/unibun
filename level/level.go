@@ -71,7 +71,6 @@ func (l *Level) Draw(screen *ebiten.Image, isBurgerMerged bool) {
 		}
 
 		op.GeoM.Translate(winRectX, winRectY-10)
-		op.GeoM.Scale(1, 0.9)
 		screen.DrawImage(l.WinningImg, op)
 	}
 	if isBurgerMerged {
