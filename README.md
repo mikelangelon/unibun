@@ -2,11 +2,51 @@
 
 Game for ebitenengine gamejam 2025 https://itch.io/jam/ebitengine-game-jam-2025
 
-The thema is UNITE
+The theme is UNITE
+
+The game is a puzzle about uniting ingredients to make the definitive burger.
 
 ## Gameplay
 
-Main idea is the player controls 2 buns and have to get united to the patty burger.
+You have to control the ingredients that are in the game, except the patty meat. 
+Cheese & Lettuce are optional to make the burger, but they can add powers to the buns if they unite as one:
+- Bun + Lettuce: Can cross walls
+- Bun + Cheese: Press Z(o X) and direction to prepare a dash (10 steps)
+
+In any case, goal is:
+- Put Bun + Patty meat + Bun in a row (except being downsided vertically, don't be a bad chef!)
+- Go with your united burger to the client
+
+Because the ingredients move always 2 steps, it has some strategy (and frustration)
+
+To don't make it easy for you there are some animals ready to beat you. Each has a different behaviour and some, even some meal preference.
+
+15 levels ready to try to challenge you a bit!
+
+### To execute
+
+You would need Go installed! Hopefully if you are in this repo is because you already have it :D
+
+Get all the dependencies first:
+
+    go mod tidy
+And run it
+
+    make run
+
+### Controls
+
+    Arrows/WASD --> Move around
+    Z/X + Arrows/WASD --> Dash (when united with Lettuce)
+    ENTER --> Select menu options
+    SPACE --> Pause game
+
+### Modes
+
+The game has 2 modes.
+
+    Normal --> 15 levels
+    Endless --> random level. Not too validated or tested.... 
 
 The plan:
 - [x] Grid map
