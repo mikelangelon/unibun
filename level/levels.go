@@ -344,7 +344,7 @@ func AnotherLettuce() *Level {
 }
 
 // Take the cheese & lettuce and run against all!
-func NewLevelLettuceMaze() *Level {
+func LettuceCheeseMaze() *Level {
 	w := Cell{Type: CellTypeWall}
 	c := Cell{Type: CellTypeFloor}
 
@@ -697,7 +697,7 @@ func AvoidTheLettuce() *Level {
 	}
 	lvl.BurgerPatty = entities.NewBurgerPatty(21, 12)
 	lvl.Winning = []Position{
-		{X: 20, Y: 6},
+		{X: 6, Y: 7},
 	}
 	lvl.cells = [][]Cell{
 		{w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w},
@@ -720,7 +720,8 @@ func AvoidTheLettuce() *Level {
 		entities.NewPlayer(10, 10, config.TopBun),
 		entities.NewPlayer(1, 13, config.BottomBun),
 		entities.NewPlayer(10, 12, config.Lettuce),
-		entities.NewPigeon(1, 1),
+		entities.NewDuck(3, 10, config.TopBun),
+		entities.NewDuck(5, 6, config.BottomBun),
 	}
 	return lvl
 }

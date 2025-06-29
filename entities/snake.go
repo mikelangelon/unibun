@@ -24,7 +24,12 @@ type Snake struct {
 
 func NewDashingFollowerEnemy(startX, startY int, targetType config.PlayerType, turnsToDash int) *Snake {
 	fe := Duck{
-		Enemy:            NewEnemy(startX, startY, imageByTarget(targetType, assets.Snake)),
+		Enemy: NewEnemy(startX, startY,
+			[]*ebiten.Image{
+				imageByTarget(targetType, assets.Snake),
+				imageByTarget(targetType, assets.Snake2),
+				imageByTarget(targetType, assets.Snake3),
+			}),
 		targetPlayerType: targetType,
 		targetX:          -1,
 		targetY:          -1,
@@ -104,7 +109,7 @@ func (dfe *Snake) Reset() {
 	dfe.dashCounter = dfe.turnsToDash
 }
 
-func imageByTarget(targetType config.PlayerType, b []byte) []*ebiten.Image {
+func imageByTarget(targetType config.PlayerType, b []byte) *ebiten.Image {
 	op := &ebiten.DrawImageOptions{}
 	// Coloring based on target
 	switch targetType {
@@ -119,5 +124,5 @@ func imageByTarget(targetType config.PlayerType, b []byte) []*ebiten.Image {
 	}
 	coloredImage := ebiten.NewImage(config.TileSize, config.TileSize)
 	coloredImage.DrawImage(common.GetImage(b), op)
-	return []*ebiten.Image{coloredImage}
+	return coloredImage
 }

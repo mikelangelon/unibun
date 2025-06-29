@@ -24,20 +24,36 @@ var (
 	Client []byte
 
 	// Animals
-	//go:embed pidgeon.png
-	Pidgeon []byte
-	//go:embed mouse.png
-	Mouse []byte
-	//go:embed snake.png
-	Snake []byte
-	//go:embed duck.png
-	Duck []byte
+	//go:embed pigeon.png
+	Pigeon []byte
+	//go:embed pigeon2.png
+	Pigeon2 []byte
+	//go:embed pigeon3.png
+	Pigeon3 []byte
 	//go:embed fly.png
 	Fly []byte
 	//go:embed fly2.png
 	Fly2 []byte
 	//go:embed fly3.png
 	Fly3 []byte
+	//go:embed mouse.png
+	Mouse []byte
+	//go:embed mouse2.png
+	Mouse2 []byte
+	//go:embed mouse3.png
+	Mouse3 []byte
+	//go:embed snake.png
+	Snake []byte
+	//go:embed snake2.png
+	Snake2 []byte
+	//go:embed snake3.png
+	Snake3 []byte
+	//go:embed duck.png
+	Duck []byte
+	//go:embed duck2.png
+	Duck2 []byte
+	//go:embed duck3.png
+	Duck3 []byte
 
 	//go:embed tile1.png
 	FloorTile []byte

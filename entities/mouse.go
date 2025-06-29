@@ -31,7 +31,11 @@ func NewMouse(startX, startY int, path []image.Point) *Mouse {
 		initialY = path[0].Y
 	}
 	return &Mouse{
-		Enemy:            NewEnemy(initialX, initialY, []*ebiten.Image{common.GetImage(assets.Mouse)}),
+		Enemy: NewEnemy(initialX, initialY, []*ebiten.Image{
+			common.GetImage(assets.Mouse),
+			common.GetImage(assets.Mouse2),
+			common.GetImage(assets.Mouse3),
+		}),
 		path:             path,
 		currentPathIndex: 0,
 		pathDirection:    1,
@@ -51,9 +55,9 @@ func (e *Mouse) Update(_ Level) bool {
 	if len(e.path) <= 1 {
 		return true
 	}
-	oldX := e.gridX
+	oldX, oldY := e.gridX, e.gridY
 	newX, newY := e.followPath()
-	return updatePosDirection(e.Enemy, oldX, newX, newY)
+	return updatePosDirection(e.Enemy, oldX, oldY, newX, newY)
 }
 
 func (e *Mouse) followPath() (int, int) {

@@ -13,7 +13,11 @@ type Pigeon struct {
 
 func NewPigeon(startX, startY int) *Pigeon {
 	return &Pigeon{
-		Enemy: NewEnemy(startX, startY, []*ebiten.Image{common.GetImage(assets.Pidgeon)}),
+		Enemy: NewEnemy(startX, startY, []*ebiten.Image{
+			common.GetImage(assets.Pigeon),
+			common.GetImage(assets.Pigeon2),
+			common.GetImage(assets.Pigeon3),
+		}),
 	}
 }
 

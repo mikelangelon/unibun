@@ -14,7 +14,7 @@ type Fly struct {
 }
 
 func NewFly(startX, startY int) *Fly {
-	return &Fly{
+	fly := &Fly{
 		Enemy: NewEnemy(startX, startY, []*ebiten.Image{
 			common.GetImage(assets.Fly),
 			common.GetImage(assets.Fly2),
@@ -23,6 +23,8 @@ func NewFly(startX, startY int) *Fly {
 		targetX: -1,
 		targetY: -1,
 	}
+	fly.animationMode = AnimateContinuously
+	return fly
 }
 
 func (fe *Fly) SetTarget(x, y int) {
@@ -47,21 +49,21 @@ func followTarget(level Level, fe *Enemy, targetX, targetY int) bool {
 		return true
 	}
 
-	currentX, currentY := fe.gridX, fe.gridY
+	oldX, oldY := fe.gridX, fe.gridY
 
-	newX, newY := currentX, currentY
+	newX, newY := oldX, oldY
 	// Try to reduce distance to the target
-	if targetX != currentX {
-		nextX := currentX + int(math.Copysign(1, float64(targetX-currentX)))
-		if level.IsWalkable(nextX, currentY) {
+	if targetX != oldX {
+		nextX := oldX + int(math.Copysign(1, float64(targetX-oldX)))
+		if level.IsWalkable(nextX, oldY) {
 			newX = nextX
 		}
-	} else if targetY != currentY {
-		nextY := currentY + int(math.Copysign(1, float64(targetY-currentY)))
-		if level.IsWalkable(currentX, nextY) {
+	} else if targetY != oldY {
+		nextY := oldY + int(math.Copysign(1, float64(targetY-oldY)))
+		if level.IsWalkable(oldX, nextY) {
 			newY = nextY
 		}
 	}
 
-	return updatePosDirection(fe, currentX, newX, newY)
+	return updatePosDirection(fe, oldX, oldY, newX, newY)
 }

@@ -25,19 +25,21 @@ The plan:
   - [x] Lettuce --> cross walls
     - [ ] Avoid going outside the screen 
   - [ ] Bacon --> ??
-- [ ] Enemies?
+- [x] Enemies
   - [x] Pidgeon --> random move
   - [x] Mouse --> follows a path
   - [x] Duck --> follows target
   - [x] Snake --> follow target + dash --> a bit buggy
   - [x] Fly --> follows patty
-  - [ ] Animate characters
+  - [ ] Cat --> stands until you are too close
+  - [x] Animate characters
     - [x] Fly
-    - [ ] Others
+    - [x] Others
 - [x] Pass to next level
 - [x] Sounds
 - [x] Music
-- [ ] Endless mode
+- [x] Endless mode
+  - [ ] Guarantee every puzzle can be solved
 - [X] Show all levels individually
 - [ ] Replace all DebugPrintAt by a proper Text
 - [ ] Dash should not pass above patty.
@@ -60,3 +62,6 @@ Eat sound:
 Tiles:
 - By ElvGames
 - https://elvgames.itch.io/free-fantasy-dreamland-dungeon
+
+Characters:
+- By ChatGPT 
